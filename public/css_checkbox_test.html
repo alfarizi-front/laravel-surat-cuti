@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Checkbox Test</title>
+    <style>
+        .checkbox {
+            width: 15px;
+            height: 15px;
+            border: 2px solid #000;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+            text-align: center;
+            line-height: 11px;
+            font-weight: bold;
+            background-color: white;
+        }
+        
+        .checkbox.checked {
+            background-color: white;
+            color: black;
+            font-weight: bold;
+        }
+        
+        table { border-collapse: collapse; width: 100%; }
+        td { border: 1px solid #000; padding: 8px; }
+    </style>
+</head>
+<body>
+    <h1>CSS Checkbox Test</h1>
+    
+    <h2>Method 1: CSS ::after (original)</h2>
+    <style>
+        .checkbox-method1.checked::after {
+            content: "✓";
+            display: block;
+            text-align: center;
+            line-height: 11px;
+            font-weight: bold;
+        }
+    </style>
+    <table>
+        <tr>
+            <td>1.</td>
+            <td><span class="checkbox checkbox-method1 checked"></span> Cuti Tahunan (CSS ::after)</td>
+        </tr>
+        <tr>
+            <td>2.</td>
+            <td><span class="checkbox checkbox-method1"></span> Cuti Besar (empty)</td>
+        </tr>
+    </table>
+    
+    <h2>Method 2: Direct content (new)</h2>
+    <table>
+        <tr>
+            <td>1.</td>
+            <td><span class="checkbox checked">✓</span> Cuti Tahunan (direct ✓)</td>
+        </tr>
+        <tr>
+            <td>2.</td>
+            <td><span class="checkbox"></span> Cuti Besar (empty)</td>
+        </tr>
+    </table>
+    
+    <h2>Method 3: Unicode alternatives</h2>
+    <table>
+        <tr>
+            <td>1.</td>
+            <td><span class="checkbox checked">&#10003;</span> Cuti Tahunan (&#10003;)</td>
+        </tr>
+        <tr>
+            <td>2.</td>
+            <td><span class="checkbox checked">&#x2713;</span> Cuti Sakit (&#x2713;)</td>
+        </tr>
+        <tr>
+            <td>3.</td>
+            <td><span class="checkbox checked">X</span> Cuti Melahirkan (X)</td>
+        </tr>
+    </table>
+    
+    <h2>Method 4: Background approach</h2>
+    <style>
+        .checkbox-bg.checked {
+            background-color: black;
+            color: white;
+        }
+    </style>
+    <table>
+        <tr>
+            <td>1.</td>
+            <td><span class="checkbox checkbox-bg checked">✓</span> Cuti Tahunan (black bg)</td>
+        </tr>
+    </table>
+</body>
+</html>

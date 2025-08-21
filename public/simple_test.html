@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Button Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .btn { 
+            padding: 10px 20px; 
+            margin: 10px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+            display: inline-block;
+        }
+        .btn-green { background: #22c55e; color: white; }
+        .btn-blue { background: #3b82f6; color: white; }
+        .btn-red { background: #ef4444; color: white; }
+        .btn:hover { opacity: 0.8; }
+        .output { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background: white; 
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Simple Button Click Test</h1>
+    <p>Test apakah JavaScript dan button click berfungsi di browser ini.</p>
+    
+    <!-- Test 1: Inline onclick -->
+    <button class="btn btn-blue" onclick="alert('✅ Inline onclick works!')">
+        Test 1: Inline onclick
+    </button>
+    
+    <!-- Test 2: Function call -->
+    <button class="btn btn-green" onclick="testFunction()">
+        Test 2: Function call
+    </button>
+    
+    <!-- Test 3: Event listener -->
+    <button id="testBtn3" class="btn btn-red">
+        Test 3: Event listener
+    </button>
+    
+    <!-- Test 4: Multiple handlers -->
+    <button id="testBtn4" class="btn btn-green" onclick="inlineHandler()">
+        Test 4: Both inline + listener
+    </button>
+    
+    <div class="output" id="output">
+        <strong>Output:</strong><br>
+        <div id="results"></div>
+    </div>
+    
+    <script>
+        // Log to console
+        console.log("🚀 Simple test script loaded");
+        
+        // Add to output
+        function addOutput(message) {
+            const results = document.getElementById('results');
+            results.innerHTML += '<div style="margin: 5px 0; padding: 5px; background: #e5f3ff; border-radius: 3px;">' + message + '</div>';
+            console.log(message);
+        }
+        
+        // Test function
+        function testFunction() {
+            addOutput('✅ Test 2: Function call works!');
+            alert('✅ Function call works!');
+        }
+        
+        // Inline handler
+        function inlineHandler() {
+            addOutput('✅ Test 4: Inline handler works!');
+        }
+        
+        // Wait for DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("✅ DOM loaded");
+            addOutput('🎯 DOM Content Loaded - JavaScript is working!');
+            
+            // Test 3: Event listener
+            const testBtn3 = document.getElementById('testBtn3');
+            if (testBtn3) {
+                testBtn3.addEventListener('click', function() {
+                    addOutput('✅ Test 3: Event listener works!');
+                    alert('✅ Event listener works!');
+                });
+                console.log("✅ Event listener added to Test 3");
+            } else {
+                console.error("❌ Test button 3 not found");
+            }
+            
+            // Test 4: Additional event listener
+            const testBtn4 = document.getElementById('testBtn4');
+            if (testBtn4) {
+                testBtn4.addEventListener('click', function() {
+                    addOutput('✅ Test 4: Event listener also works!');
+                });
+                console.log("✅ Event listener added to Test 4");
+            }
+            
+            addOutput('🔧 All event listeners setup complete');
+        });
+        
+        // Test if script runs immediately
+        addOutput('📜 Script executed immediately');
+        console.log("📜 Script executed");
+    </script>
+</body>
+</html>

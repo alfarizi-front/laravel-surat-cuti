@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('surat_cuti', function (Blueprint $table) {
+            $table->string('golongan_ruang', 50)->nullable()->after('pengaju_id');
+            $table->string('masa_jabatan', 100)->nullable()->after('golongan_ruang');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('surat_cuti', function (Blueprint $table) {
+            $table->dropColumn(['golongan_ruang', 'masa_jabatan']);
+        });
+    }
+};
+
+
+

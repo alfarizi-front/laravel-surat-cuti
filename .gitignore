@@ -1,0 +1,41 @@
+# --------------------------------------
+# Laravel & PHP defaults
+# --------------------------------------
+/vendor/
+/node_modules/
+.env
+.env.backup
+.env.production
+/storage/*.key
+/storage/pail
+/public/storage
+/public/hot
+/public/build
+Homestead.json
+Homestead.yaml
+auth.json
+.phpunit.result.cache
+.phpactor.json
+
+# --------------------------------------
+# Editor / IDE
+# --------------------------------------
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+
+# --------------------------------------
+# OS junk
+# --------------------------------------
+*.log
+.DS_Store
+Thumbs.db
+
+# --------------------------------------
+# Cache / temporary
+# --------------------------------------
+/bootstrap/cache/*.php
+/storage/logs/

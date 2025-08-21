@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checkbox Preview</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .checkbox {
+            width: 15px;
+            height: 15px;
+            border: 2px solid #000;
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: middle;
+            text-align: center;
+            line-height: 11px;
+            font-weight: bold;
+            background-color: white;
+        }
+        .checkbox.checked {
+            background-color: white;
+            color: black;
+        }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        td { padding: 8px; border: 1px solid #ccc; }
+        .center { text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Checkbox Preview Test</h1>
+    
+    <h2>II. JENIS CUTI YANG DIAMBIL</h2>
+    <p>(ceklis yang dipilih pemohon)</p>
+    
+    <table>
+        <tr>
+            <td>1.</td>
+            <td>
+                <span class="checkbox checked">✓</span>
+                Cuti Tahunan
+            </td>
+            <td>2.</td>
+            <td>
+                <span class="checkbox"></span>
+                Cuti Besar
+            </td>
+        </tr>
+        <tr>
+            <td>3.</td>
+            <td>
+                <span class="checkbox"></span>
+                Cuti Sakit
+            </td>
+            <td>4.</td>
+            <td>
+                <span class="checkbox"></span>
+                Cuti Melahirkan
+            </td>
+        </tr>
+        <tr>
+            <td>5.</td>
+            <td>
+                <span class="checkbox"></span>
+                Cuti Alasan Penting
+            </td>
+            <td>6.</td>
+            <td>
+                <span class="checkbox"></span>
+                Cuti di Luar Tanggungan Negara
+            </td>
+        </tr>
+    </table>
+    
+    <h3>Test dengan Jenis Cuti: Cuti Tahunan</h3>
+    
+    <table>
+        <tr>
+            <td>1.</td>
+            <td>
+                <span class="checkbox checked">✓</span>
+                Cuti Tahunan
+            </td>
+            <td>2.</td>
+            <td>
+                <span class="checkbox "></span>
+                Cuti Besar
+            </td>
+        </tr>
+        <tr>
+            <td>3.</td>
+            <td>
+                <span class="checkbox "></span>
+                Cuti Sakit
+            </td>
+            <td>4.</td>
+            <td>
+                <span class="checkbox "></span>
+                Cuti Melahirkan
+            </td>
+        </tr>
+    </table>
+    
+    <p><strong>Jenis Cuti yang Dipilih:</strong> Cuti Tahunan</p>
+    <p><strong>Expected Result:</strong> Checkbox yang sesuai harus menampilkan ✓</p>
+</body>
+</html>

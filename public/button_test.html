@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Button Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8">
+    <h1 class="text-2xl font-bold mb-4">Button Click Test</h1>
+    
+    <div class="space-y-4">
+        <button id="testBtn1" onclick="testFunction1()" class="bg-blue-500 text-white px-4 py-2 rounded">
+            Test Button 1 (onclick)
+        </button>
+        
+        <button id="testBtn2" class="bg-green-500 text-white px-4 py-2 rounded">
+            Test Button 2 (addEventListener)
+        </button>
+        
+        <button id="bulkApproveBtn" onclick="bulkApproveClick()" class="bg-green-500 text-white px-4 py-2 rounded">
+            Bulk Approve Test
+        </button>
+    </div>
+    
+    <div id="output" class="mt-4 p-4 bg-gray-100 rounded"></div>
+    
+    <script>
+        console.log("Test script loaded");
+        
+        function testFunction1() {
+            console.log("Test function 1 called");
+            document.getElementById("output").innerHTML += "<p>✅ onclick handler works!</p>";
+        }
+        
+        function bulkApproveClick() {
+            console.log("Bulk approve test called");
+            document.getElementById("output").innerHTML += "<p>✅ Bulk approve onclick works!</p>";
+        }
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("DOM loaded");
+            
+            const testBtn2 = document.getElementById("testBtn2");
+            if (testBtn2) {
+                testBtn2.addEventListener("click", function() {
+                    console.log("Test button 2 clicked");
+                    document.getElementById("output").innerHTML += "<p>✅ addEventListener works!</p>";
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Function Definition Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8 bg-gray-100">
+    <h1 class="text-2xl font-bold mb-6">🧪 Function Definition Test</h1>
+    
+    <div class="bg-white p-6 rounded-lg shadow mb-6">
+        <h2 class="text-lg font-semibold mb-4">Test Buttons:</h2>
+        
+        <div class="space-y-3">
+            <div>
+                <button onclick="testClick()" class="bg-yellow-500 text-white px-4 py-2 rounded mr-2">
+                    Test Click Function
+                </button>
+                <span class="text-sm text-gray-600">Should show alert</span>
+            </div>
+            
+            <div>
+                <button onclick="alert('Direct alert works!')" class="bg-blue-500 text-white px-4 py-2 rounded mr-2">
+                    Direct Alert
+                </button>
+                <span class="text-sm text-gray-600">Should work immediately</span>
+            </div>
+            
+            <div>
+                <button onclick="simpleBulkApprove()" class="bg-green-500 text-white px-4 py-2 rounded mr-2">
+                    Test Bulk Approve
+                </button>
+                <span class="text-sm text-gray-600">Should show confirmation</span>
+            </div>
+            
+            <div>
+                <button onclick="simpleBulkReject()" class="bg-red-500 text-white px-4 py-2 rounded mr-2">
+                    Test Bulk Reject
+                </button>
+                <span class="text-sm text-gray-600">Should show confirmation</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-blue-50 p-4 rounded-lg">
+        <h3 class="font-semibold mb-2">Console Output:</h3>
+        <div id="console-output" class="bg-white p-3 rounded border font-mono text-sm"></div>
+    </div>
+    
+    <!-- Inline JavaScript - Same as dashboard -->
+    <script>
+        console.log("🚀 Function Test Script Loading...");
+        
+        // Capture console.log for display
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById("console-output");
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleOutput.innerHTML += "<div>" + args.join(" ") + "</div>";
+        };
+        
+        // Define functions exactly like in dashboard
+        window.simpleBulkApprove = function() {
+            console.log("🟢 Simple Bulk Approve Called!");
+            
+            if (confirm("Yakin ingin menyetujui SEMUA surat cuti pending?\n\nIni akan:\n1. Mengubah status ke \"disetujui\"\n2. Membuat disposisi otomatis\n3. Update sisa cuti otomatis\n\nLanjutkan?")) {
+                console.log("✅ User confirmed bulk approve");
+                alert("✅ Bulk approve function works! (Would submit form in real dashboard)");
+            } else {
+                console.log("❌ User cancelled bulk approve");
+            }
+        };
+        
+        window.simpleBulkReject = function() {
+            console.log("🔴 Simple Bulk Reject Called!");
+            
+            if (confirm("Yakin ingin menolak SEMUA surat cuti pending?\n\nIni tidak bisa dibatalkan!")) {
+                console.log("✅ User confirmed bulk reject");
+                alert("✅ Bulk reject function works! (Would submit form in real dashboard)");
+            } else {
+                console.log("❌ User cancelled bulk reject");
+            }
+        };
+        
+        window.testClick = function() {
+            console.log("✅ Test click function called");
+            alert("✅ Test function works perfectly!");
+        };
+        
+        // Verify functions are defined
+        console.log("🔍 Function check:", {
+            simpleBulkApprove: typeof window.simpleBulkApprove,
+            simpleBulkReject: typeof window.simpleBulkReject,
+            testClick: typeof window.testClick
+        });
+        
+        console.log("✅ All functions loaded successfully!");
+    </script>
+</body>
+</html>

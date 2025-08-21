@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ultra Simple Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        button { 
+            padding: 15px 30px; 
+            margin: 10px; 
+            font-size: 18px; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 5px;
+        }
+        .green { background: #22c55e; color: white; }
+        .red { background: #ef4444; color: white; }
+        .blue { background: #3b82f6; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Ultra Simple Button Test</h1>
+    
+    <p><strong>Test 1:</strong> Basic alert</p>
+    <button class="blue" onclick="alert('✅ Basic onclick works!')">
+        Click Me - Basic Alert
+    </button>
+    
+    <p><strong>Test 2:</strong> Function call</p>
+    <button class="green" onclick="testFunction()">
+        Click Me - Function Call
+    </button>
+    
+    <p><strong>Test 3:</strong> Console log</p>
+    <button class="red" onclick="console.log('✅ Console log works!'); alert('Check console!')">
+        Click Me - Console Log
+    </button>
+    
+    <p><strong>Test 4:</strong> Form submission</p>
+    <form method="GET" action="http://localhost/admin/surat-cuti/admin-dashboard">
+        <button type="submit" class="green">
+            Click Me - Form Submit
+        </button>
+    </form>
+    
+    <div style="margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px;">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Try each button in order</li>
+            <li>If ANY button works, JavaScript is functional</li>
+            <li>If NO buttons work, there's a browser/system issue</li>
+            <li>Open browser console (F12) to see logs</li>
+        </ol>
+    </div>
+    
+    <script>
+        console.log("🚀 Ultra simple script loaded");
+        
+        function testFunction() {
+            console.log("✅ Function call works!");
+            alert("✅ Function call successful!");
+        }
+        
+        // Test immediate execution
+        console.log("📜 Script executed immediately");
+    </script>
+</body>
+</html>

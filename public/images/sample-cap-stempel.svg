@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .text { 
+        font-family: Arial, sans-serif; 
+        font-weight: bold; 
+        text-anchor: middle; 
+        fill: #000;
+      }
+      .title { font-size: 14px; }
+      .subtitle { font-size: 12px; }
+      .name { font-size: 10px; }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="200" height="100" fill="none"/>
+  
+  <!-- Outer circle -->
+  <circle cx="100" cy="50" r="45" fill="none" stroke="#000" stroke-width="2"/>
+  
+  <!-- Inner circle -->
+  <circle cx="100" cy="50" r="35" fill="none" stroke="#000" stroke-width="1"/>
+  
+  <!-- Text -->
+  <text x="100" y="25" class="text title">DINAS KESEHATAN</text>
+  <text x="100" y="40" class="text subtitle">KABUPATEN PURWOREJO</text>
+  <text x="100" y="60" class="text name">KEPALA DINAS</text>
+  <text x="100" y="75" class="text name">dr. SUDARMI, MM</text>
+</svg>
