@@ -362,7 +362,7 @@
             @php
                 $atasanLangsung = $disposisiList->where('jabatan', 'like', '%Kepala Puskesmas%')->first() ??
                                  $disposisiList->where('jabatan', 'like', '%Kepala%')->first();
-                $keputusanAtasan = $pertimbangan_atasan ?? ($suratCuti->pertimbangan_atasan ?? '');
+                $keputusanAtasan = strtolower($pertimbangan_atasan ?? ($suratCuti->pertimbangan_atasan ?? ''));
             @endphp
             <tr>
                 <td style="width: 25%;">
@@ -419,7 +419,7 @@
         <tbody>
             @php
                 $kadin = $disposisiList->where('jabatan', 'KADIN')->first();
-                $keputusanKepala = $keputusan_pejabat ?? ($suratCuti->keputusan_pejabat ?? '');
+                $keputusanKepala = strtolower($keputusan_pejabat ?? ($suratCuti->keputusan_pejabat ?? ''));
             @endphp
             <tr>
                 <td style="width: 25%;">
