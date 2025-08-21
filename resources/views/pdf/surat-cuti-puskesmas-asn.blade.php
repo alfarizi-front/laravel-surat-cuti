@@ -283,7 +283,7 @@
         </thead>
         <tbody>
             <tr>
-                <td rowspan="4" style="width: 30%; vertical-align: top;">
+                <td style="width: 30%; vertical-align: top;">
                     <strong>1. CUTI TAHUNAN</strong><br><br>
                     <table style="width: 100%; border: none;">
                         <tr style="border: none;">
@@ -311,20 +311,8 @@
                         </tr>
                     </table>
                 </td>
-                <td style="width: 35%;"><strong>2. CUTI BESAR</strong></td>
                 <td style="width: 35%;"></td>
-            </tr>
-            <tr>
-                <td><strong>3. CUTI SAKIT</strong></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td><strong>4. CUTI MELAHIRKAN</strong></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td><strong>5. CUTI KARENA ALASAN PENTING</strong></td>
-                <td></td>
+                <td style="width: 35%;"></td>
             </tr>
         </tbody>
     </table>
