@@ -160,13 +160,13 @@
                 <td><strong>Jabatan</strong></td>
                 <td>{{ $suratCuti->pengaju->jabatan }}</td>
                 <td><strong>Masa Kerja</strong></td>
-                <td>{{ $masa_kerja ?? $suratCuti->pengaju->masa_kerja ?? '-' }}</td>
+                <td>{{ $suratCuti->masa_jabatan ?? $suratCuti->pengaju->masa_kerja ?? '-' }}</td>
             </tr>
             <tr>
                 <td><strong>Unit Kerja</strong></td>
                 <td>{{ $suratCuti->pengaju->unit_kerja }}</td>
                 <td><strong>Gol./Ruang</strong></td>
-                <td>{{ $suratCuti->pengaju->golongan ?? $suratCuti->pengaju->pangkat ?? '-' }}</td>
+                <td>{{ $suratCuti->golongan_ruang ?? $suratCuti->pengaju->golongan ?? $suratCuti->pengaju->pangkat ?? '-' }}</td>
             </tr>
         </tbody>
     </table>

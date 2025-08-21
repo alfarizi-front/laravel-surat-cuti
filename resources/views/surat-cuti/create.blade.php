@@ -168,6 +168,18 @@
                                     </div>
                                 </div>
                             </div>
+                            @if(auth()->user()->jenis_pegawai === 'ASN')
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                <div>
+                                    <label for="golongan_ruang" class="block text-sm font-medium text-gray-700">Golongan/Ruang</label>
+                                    <input type="text" id="golongan_ruang" name="golongan_ruang" value="{{ old('golongan_ruang', auth()->user()->golongan) }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="III/a">
+                                </div>
+                                <div>
+                                    <label for="masa_jabatan" class="block text-sm font-medium text-gray-700">Masa Kerja</label>
+                                    <input type="text" id="masa_jabatan" name="masa_jabatan" value="{{ old('masa_jabatan', auth()->user()->masa_kerja) }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="5 Tahun 0 Bulan">
+                                </div>
+                            </div>
+                            @endif
                         </div>
 
                         <!-- Detail Cuti -->
