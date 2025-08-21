@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SuratCuti;
-use App\Models\JenisCuti;
 use App\Models\AlurCuti;
 use App\Models\DisposisiCuti;
-use App\Models\User;
-use App\Models\CutiTahunan;
-use App\Models\SisaCuti;
+use App\Models\JenisCuti;
 use App\Models\Signature;
+use App\Models\SisaCuti;
+use App\Models\SuratCuti;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -26,17 +25,17 @@ class SuratCutiController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         if ($user->role === 'admin') {
             $suratCuti = SuratCuti::with(['pengaju', 'jenisCuti'])->latest()->paginate(10);
         } elseif ($user->role === 'karyawan') {
             $suratCuti = SuratCuti::where('pengaju_id', $user->id)
-                                  ->with(['pengaju', 'jenisCuti'])
-                                  ->latest()
-                                  ->paginate(10);
+                ->with(['pengaju', 'jenisCuti'])
+                ->latest()
+                ->paginate(10);
         } else {
             // For disposisi roles, show surat that need their action
-            $suratCuti = SuratCuti::whereHas('disposisiCuti', function($query) use ($user) {
+            $suratCuti = SuratCuti::whereHas('disposisiCuti', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })->with(['pengaju', 'jenisCuti'])->latest()->paginate(10);
         }
@@ -88,6 +87,8 @@ class SuratCutiController extends Controller
             'tanggal_awal' => 'required|date|after_or_equal:today',
             'tanggal_akhir' => 'required|date|after_or_equal:tanggal_awal',
             'alasan' => 'required|string|max:1000',
+            'golongan' => 'nullable|string|max:50',
+            'masa_kerja' => 'nullable|string|max:50',
         ];
 
         if ($user->jenis_pegawai === 'ASN') {
@@ -97,6 +98,22 @@ class SuratCutiController extends Controller
         }
 
         $validatedData = $request->validate($rules);
+
+        // Update informasi golongan dan masa kerja pengguna
+        $golongan = $request->input('golongan', $user->golongan);
+        $masaKerja = $request->input('masa_kerja', $user->masa_kerja);
+
+        if ($request->filled('golongan') || $request->filled('masa_kerja')) {
+            $user->update([
+                'golongan' => $golongan,
+                'masa_kerja' => $masaKerja,
+            ]);
+        }
+
+        $validatedData['golongan_ruang'] = $golongan;
+        $validatedData['masa_jabatan'] = $masaKerja;
+
+        unset($validatedData['golongan'], $validatedData['masa_kerja']);
 
         // Hitung jumlah hari cuti
         $tanggalAwal = \Carbon\Carbon::parse($request->tanggal_awal);
@@ -136,11 +153,11 @@ class SuratCutiController extends Controller
             'sisa_cuti' => $cutiTahunan->sisa_cuti,
             'is_exceeding' => $isExceeding,
             'total_if_approved' => $totalCutiIfApproved,
-            'jatah_cuti' => $cutiTahunan->jatah_cuti
+            'jatah_cuti' => $cutiTahunan->jatah_cuti,
         ]);
 
         return redirect()->route('surat-cuti.show', $suratCuti)
-                        ->with('success', 'Surat cuti berhasil dibuat. Silakan review dan submit untuk memulai proses disposisi.');
+            ->with('success', 'Surat cuti berhasil dibuat. Silakan review dan submit untuk memulai proses disposisi.');
     }
 
     /**
@@ -154,9 +171,9 @@ class SuratCutiController extends Controller
         if ($user->role !== 'admin' && $suratCuti->pengaju_id !== $user->id) {
             // Check if user is in disposisi chain
             $hasAccess = $suratCuti->disposisiCuti()
-                                   ->where('user_id', $user->id)
-                                   ->exists();
-            if (!$hasAccess) {
+                ->where('user_id', $user->id)
+                ->exists();
+            if (! $hasAccess) {
                 abort(403, 'Anda tidak memiliki akses ke surat cuti ini');
             }
         }
@@ -193,7 +210,7 @@ class SuratCutiController extends Controller
         // Update status and tanggal ajuan
         $suratCuti->update([
             'status' => 'proses',
-            'tanggal_ajuan' => now()
+            'tanggal_ajuan' => now(),
         ]);
 
         // Update cuti pending
@@ -204,15 +221,17 @@ class SuratCutiController extends Controller
 
         // Pesan berdasarkan status limit
         if ($isExceeding) {
-            $message = "Surat cuti berhasil disubmit untuk proses disposisi. " .
-                      "PERHATIAN: Pengajuan ini melebihi batas maksimal cuti tahunan (12 hari). " .
-                      "Total cuti jika disetujui: {$totalCutiIfApproved} hari. " .
-                      "Pengajuan akan memerlukan persetujuan khusus dari admin.";
+            $message = 'Surat cuti berhasil disubmit untuk proses disposisi. '.
+                      'PERHATIAN: Pengajuan ini melebihi batas maksimal cuti tahunan (12 hari). '.
+                      "Total cuti jika disetujui: {$totalCutiIfApproved} hari. ".
+                      'Pengajuan akan memerlukan persetujuan khusus dari admin.';
+
             return back()->with('warning', $message);
         } else {
             $sisaCuti = $cutiTahunan->sisa_cuti;
-            $message = "Surat cuti berhasil disubmit untuk proses disposisi. " .
+            $message = 'Surat cuti berhasil disubmit untuk proses disposisi. '.
                       "Sisa cuti Anda setelah pengajuan ini: {$sisaCuti} hari.";
+
             return back()->with('success', $message);
         }
     }
@@ -233,6 +252,7 @@ class SuratCutiController extends Controller
         // Log if still no workflow found
         if ($alurCuti->isEmpty()) {
             Log::warning("No workflow found for unit kerja: {$unitKerja}. Surat cuti ID: {$suratCuti->id}");
+
             return;
         }
 
@@ -243,28 +263,28 @@ class SuratCutiController extends Controller
 
             // Find user with matching jabatan in target unit kerja
             $user = User::where('jabatan', $alur->jabatan)
-                       ->where('unit_kerja', $targetUnitKerja)
-                       ->first();
+                ->where('unit_kerja', $targetUnitKerja)
+                ->first();
 
             // If not found in target unit, look for cross-unit roles
-            if (!$user && in_array($alur->jabatan, ['Kasubag Umpeg', 'Sekretaris Dinas', 'KADIN'])) {
+            if (! $user && in_array($alur->jabatan, ['Kasubag Umpeg', 'Sekretaris Dinas', 'KADIN'])) {
                 $user = User::where('jabatan', $alur->jabatan)->first();
             }
 
             if ($user) {
                 // Check if disposisi already exists to prevent duplicates
                 $existingDisposisi = DisposisiCuti::where('surat_cuti_id', $suratCuti->id)
-                                                 ->where('user_id', $user->id)
-                                                 ->where('jabatan', $alur->jabatan)
-                                                 ->first();
-                
-                if (!$existingDisposisi) {
+                    ->where('user_id', $user->id)
+                    ->where('jabatan', $alur->jabatan)
+                    ->first();
+
+                if (! $existingDisposisi) {
                     DisposisiCuti::create([
                         'surat_cuti_id' => $suratCuti->id,
                         'user_id' => $user->id,
                         'jabatan' => $alur->jabatan,
                         'tipe_disposisi' => $alur->tipe_disposisi, // Include tipe_disposisi from workflow
-                        'status' => 'pending'
+                        'status' => 'pending',
                     ]);
                 }
             }
@@ -297,18 +317,21 @@ class SuratCutiController extends Controller
         if (isset($fallbackPatterns[$unitKerja])) {
             $fallbackUnit = $fallbackPatterns[$unitKerja];
             Log::info("Using fallback workflow for '{$unitKerja}' -> '{$fallbackUnit}'");
+
             return AlurCuti::getAlurByUnitKerja($fallbackUnit);
         }
 
         // Try generic patterns
         if (str_contains($unitKerja, 'Puskesmas')) {
             Log::info("Using generic Puskesmas workflow for '{$unitKerja}'");
+
             return AlurCuti::getAlurByUnitKerja('Puskesmas');
         }
 
         // All Bidang variations go to "Bidang"
         if (str_contains($unitKerja, 'Bidang') || str_contains($unitKerja, 'Gudang')) {
             Log::info("Using generic Bidang workflow for '{$unitKerja}'");
+
             return AlurCuti::getAlurByUnitKerja('Bidang');
         }
 
@@ -370,7 +393,7 @@ class SuratCutiController extends Controller
                 'total' => $parafs->count(),
                 'approved' => $parafs->where('status', 'sudah')->count(),
                 'pending' => $parafs->where('status', 'pending')->count(),
-            ]
+            ],
         ];
     }
 
@@ -443,9 +466,9 @@ class SuratCutiController extends Controller
         $kadin = $disposisiList->where('jabatan', 'KADIN')->first()
               ?? $disposisiList->where('jabatan', 'Kepala Dinas')->first()
               ?? $disposisiList->where('jabatan', 'Kepala Dinas Kesehatan')->first()
-              ?? $disposisiList->filter(function($disposisi) {
-                     return $disposisi->user && $disposisi->user->role === 'kadin';
-                 })->first();
+              ?? $disposisiList->filter(function ($disposisi) {
+                  return $disposisi->user && $disposisi->user->role === 'kadin';
+              })->first();
 
         // Find Kepala Puskesmas disposisi
         $atasanLangsung = $disposisiList->where('jabatan', 'Kepala Puskesmas')->first()
@@ -456,10 +479,10 @@ class SuratCutiController extends Controller
         $atasanSignature = Signature::getByJabatan('Kepala Puskesmas');
 
         return array_merge($data, [
-            'puskesmas_name' => 'Puskesmas ' . str_replace('Puskesmas ', '', $unitKerja),
+            'puskesmas_name' => 'Puskesmas '.str_replace('Puskesmas ', '', $unitKerja),
             'puskesmas_address' => 'Jl. Kesehatan Masyarakat No. 1',
             'puskesmas_phone' => '(0275) 123456',
-            'puskesmas_code' => 'PKM' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
+            'puskesmas_code' => 'PKM'.str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
             'kepala_puskesmas' => 'dr. Kepala Puskesmas',
             'kepala_puskesmas_nip' => '196501011990031001',
             'dokter_pemeriksa' => 'dr. Dokter Puskesmas',
@@ -471,7 +494,7 @@ class SuratCutiController extends Controller
             'kadin' => $kadin,
             'kadinSignature' => $kadinSignature,
             'atasanLangsung' => $atasanLangsung,
-            'atasanSignature' => $atasanSignature
+            'atasanSignature' => $atasanSignature,
         ]);
     }
 
@@ -487,9 +510,9 @@ class SuratCutiController extends Controller
         $kadin = $disposisiList->where('jabatan', 'KADIN')->first()
               ?? $disposisiList->where('jabatan', 'Kepala Dinas')->first()
               ?? $disposisiList->where('jabatan', 'Kepala Dinas Kesehatan')->first()
-              ?? $disposisiList->filter(function($disposisi) {
-                     return $disposisi->user && $disposisi->user->role === 'kadin';
-                 })->first();
+              ?? $disposisiList->filter(function ($disposisi) {
+                  return $disposisi->user && $disposisi->user->role === 'kadin';
+              })->first();
 
         // Find SEKDIN disposisi
         $sekdin = $disposisiList->where('jabatan', 'SEKDIN')->first()
@@ -510,7 +533,7 @@ class SuratCutiController extends Controller
             'golongan' => 'III/c',
             'sisa_cuti' => '12 hari',
             'cuti_diambil' => '0 hari',
-            'nomor_absen' => 'A' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
+            'nomor_absen' => 'A'.str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
             'status_kepegawaian' => 'PNS Aktif',
             'alamat_cuti' => 'Sesuai alamat KTP',
 
@@ -520,7 +543,7 @@ class SuratCutiController extends Controller
             'sekdin' => $sekdin,
             'sekdinSignature' => $sekdinSignature,
             'atasanLangsung' => $sekdin, // Alias for compatibility
-            'atasanSignature' => $sekdinSignature // Alias for compatibility
+            'atasanSignature' => $sekdinSignature, // Alias for compatibility
         ]);
     }
 
@@ -536,9 +559,9 @@ class SuratCutiController extends Controller
         $kadin = $disposisiList->where('jabatan', 'KADIN')->first()
               ?? $disposisiList->where('jabatan', 'Kepala Dinas')->first()
               ?? $disposisiList->where('jabatan', 'Kepala Dinas Kesehatan')->first()
-              ?? $disposisiList->filter(function($disposisi) {
-                     return $disposisi->user && $disposisi->user->role === 'kadin';
-                 })->first();
+              ?? $disposisiList->filter(function ($disposisi) {
+                  return $disposisi->user && $disposisi->user->role === 'kadin';
+              })->first();
 
         // Find Kepala Bidang disposisi
         $kepalaBidang = $disposisiList->where('jabatan', 'Kepala Bidang')->first()
@@ -550,9 +573,9 @@ class SuratCutiController extends Controller
 
         return array_merge($data, [
             'nama_bidang' => $unitKerja,
-            'kepala_bidang' => 'Kepala ' . $unitKerja,
+            'kepala_bidang' => 'Kepala '.$unitKerja,
             'kepala_bidang_nip' => '196503031992033003',
-            'kode_bidang' => 'BDG' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
+            'kode_bidang' => 'BDG'.str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT),
             'program_utama' => 'Pelayanan Kesehatan Masyarakat',
             'target_tahun' => '95% Cakupan Pelayanan',
             'spesialisasi' => 'Kesehatan Masyarakat',
@@ -572,7 +595,7 @@ class SuratCutiController extends Controller
             'kepalaBidang' => $kepalaBidang,
             'kepalaBidangSignature' => $kepalaBidangSignature,
             'atasanLangsung' => $kepalaBidang, // Alias for compatibility
-            'atasanSignature' => $kepalaBidangSignature // Alias for compatibility
+            'atasanSignature' => $kepalaBidangSignature, // Alias for compatibility
         ]);
     }
 
@@ -588,9 +611,9 @@ class SuratCutiController extends Controller
         $kadin = $disposisiList->where('jabatan', 'KADIN')->first()
               ?? $disposisiList->where('jabatan', 'Kepala Dinas')->first()
               ?? $disposisiList->where('jabatan', 'Kepala Dinas Kesehatan')->first()
-              ?? $disposisiList->filter(function($disposisi) {
-                     return $disposisi->user && $disposisi->user->role === 'kadin';
-                 })->first();
+              ?? $disposisiList->filter(function ($disposisi) {
+                  return $disposisi->user && $disposisi->user->role === 'kadin';
+              })->first();
 
         // Find atasan langsung (could be various positions)
         $atasanLangsung = $disposisiList->where('tipe_disposisi', 'paraf')->first();
@@ -613,7 +636,7 @@ class SuratCutiController extends Controller
             'kadin' => $kadin,
             'kadinSignature' => $kadinSignature,
             'atasanLangsung' => $atasanLangsung,
-            'atasanSignature' => $atasanSignature
+            'atasanSignature' => $atasanSignature,
         ]);
     }
 
@@ -624,7 +647,7 @@ class SuratCutiController extends Controller
     {
         try {
             // Allow PDF generation for approved surat or surat with sufficient approvals
-            if (!$this->canGeneratePDF($suratCuti)) {
+            if (! $this->canGeneratePDF($suratCuti)) {
                 return back()->with('error', 'PDF hanya dapat diunduh untuk surat cuti yang sudah memenuhi persyaratan persetujuan.');
             }
 
@@ -633,9 +656,9 @@ class SuratCutiController extends Controller
             if ($user->role !== 'admin' && $suratCuti->pengaju_id !== $user->id) {
                 // Check if user is in disposisi chain
                 $hasAccess = $suratCuti->disposisiCuti()
-                                       ->where('user_id', $user->id)
-                                       ->exists();
-                if (!$hasAccess) {
+                    ->where('user_id', $user->id)
+                    ->exists();
+                if (! $hasAccess) {
                     return back()->with('error', 'Anda tidak memiliki akses untuk mengunduh PDF ini.');
                 }
             }
@@ -645,20 +668,20 @@ class SuratCutiController extends Controller
 
             // Get disposisi data dengan urutan yang benar (berdasarkan workflow)
             $disposisiList = $suratCuti->disposisiCuti()
-                                      ->with(['user'])
-                                      ->orderBy('created_at', 'asc')
-                                      ->get();
+                ->with(['user'])
+                ->orderBy('created_at', 'asc')
+                ->get();
 
             // Find KADIN disposisi (cek berbagai kemungkinan nama jabatan)
             $kadinDisposisi = $disposisiList->where('jabatan', 'KADIN')->first()
                            ?? $disposisiList->where('jabatan', 'Kepala Dinas')->first()
                            ?? $disposisiList->where('jabatan', 'Kepala Dinas Kesehatan')->first()
-                           ?? $disposisiList->filter(function($disposisi) {
-                                  return $disposisi->user && $disposisi->user->role === 'kadin';
-                              })->first()
-                           ?? $disposisiList->filter(function($disposisi) {
-                                  return $disposisi->user && stripos($disposisi->user->jabatan, 'kepala dinas') !== false;
-                              })->first();
+                           ?? $disposisiList->filter(function ($disposisi) {
+                               return $disposisi->user && $disposisi->user->role === 'kadin';
+                           })->first()
+                           ?? $disposisiList->filter(function ($disposisi) {
+                               return $disposisi->user && stripos($disposisi->user->jabatan, 'kepala dinas') !== false;
+                           })->first();
 
             // Prepare data untuk PDF dengan validasi konsistensi
             $pdfData = [
@@ -670,7 +693,7 @@ class SuratCutiController extends Controller
                 'tanggal_cetak' => now(),
                 'jumlah_hari' => $suratCuti->jumlah_hari,
                 'signatureHelper' => $this->getSignatureHelper(),
-                'formatTanggal' => function($date) {
+                'formatTanggal' => function ($date) {
                     return $this->formatTanggalIndonesia($date);
                 },
                 'isApproved' => $suratCuti->status === 'disetujui',
@@ -678,13 +701,13 @@ class SuratCutiController extends Controller
                 // Data tambahan untuk konsistensi
                 'nomorSurat' => $this->generateNomorSurat($suratCuti),
                 'statusSurat' => $suratCuti->status,
-                'tanggalPengajuan' => $suratCuti->created_at
+                'tanggalPengajuan' => $suratCuti->created_at,
             ];
 
             // Cek apakah DomPDF tersedia
             if (class_exists('Barryvdh\DomPDF\Facade\Pdf')) {
                 try {
-                     // Map data ke template BLANKO CUTI resmi
+                    // Map data ke template BLANKO CUTI resmi
                     $atasanParaf = $disposisiList->firstWhere('tipe_disposisi', 'paraf');
                     $pejabatUser = ($kadinDisposisi && $kadinDisposisi->user) ? $kadinDisposisi->user : null;
 
@@ -695,21 +718,25 @@ class SuratCutiController extends Controller
 
                     $atasan_cap_base64 = null;
                     if ($atasanParaf && $atasanParaf->user && $atasanParaf->user->cap_stempel && ($atasanParaf->user->gunakan_cap ?? false)) {
-                        $capPath = public_path('storage/' . $atasanParaf->user->cap_stempel);
+                        $capPath = public_path('storage/'.$atasanParaf->user->cap_stempel);
                         if (file_exists($capPath)) {
                             try {
-                                $atasan_cap_base64 = 'data:' . mime_content_type($capPath) . ';base64,' . base64_encode(file_get_contents($capPath));
-                            } catch (\Exception $e) { $atasan_cap_base64 = null; }
+                                $atasan_cap_base64 = 'data:'.mime_content_type($capPath).';base64,'.base64_encode(file_get_contents($capPath));
+                            } catch (\Exception $e) {
+                                $atasan_cap_base64 = null;
+                            }
                         }
                     }
 
                     $pejabat_cap_base64 = null;
                     if ($pejabatUser && $pejabatUser->cap_stempel && ($pejabatUser->gunakan_cap ?? false)) {
-                        $capPath = public_path('storage/' . $pejabatUser->cap_stempel);
+                        $capPath = public_path('storage/'.$pejabatUser->cap_stempel);
                         if (file_exists($capPath)) {
                             try {
-                                $pejabat_cap_base64 = 'data:' . mime_content_type($capPath) . ';base64,' . base64_encode(file_get_contents($capPath));
-                            } catch (\Exception $e) { $pejabat_cap_base64 = null; }
+                                $pejabat_cap_base64 = 'data:'.mime_content_type($capPath).';base64,'.base64_encode(file_get_contents($capPath));
+                            } catch (\Exception $e) {
+                                $pejabat_cap_base64 = null;
+                            }
                         }
                     }
 
@@ -778,18 +805,20 @@ class SuratCutiController extends Controller
 
                     return $pdf->download($filename);
                 } catch (\Exception $e) {
-                    Log::error('PDF Generation Error: ' . $e->getMessage());
+                    Log::error('PDF Generation Error: '.$e->getMessage());
+
                     // Fallback ke preview
                     return view('surat-cuti.pdf-preview', $pdfData)
-                           ->with('error', 'Gagal generate PDF. Menampilkan preview.');
+                        ->with('error', 'Gagal generate PDF. Menampilkan preview.');
                 }
             } else {
                 // DomPDF belum terinstall, tampilkan preview
                 return view('surat-cuti.pdf-preview', $pdfData)
-                       ->with('info', 'DomPDF belum terinstall. Menampilkan preview yang bisa di-print.');
+                    ->with('info', 'DomPDF belum terinstall. Menampilkan preview yang bisa di-print.');
             }
         } catch (\Exception $e) {
-            Log::error('PDF Controller Error: ' . $e->getMessage());
+            Log::error('PDF Controller Error: '.$e->getMessage());
+
             return back()->with('error', 'Terjadi kesalahan saat mengakses PDF.');
         }
     }
@@ -799,14 +828,14 @@ class SuratCutiController extends Controller
      */
     private function getSignatureHelper()
     {
-        return function($user, $isForPdf = true) {
-            if (!$user || !$user->tanda_tangan) {
+        return function ($user, $isForPdf = true) {
+            if (! $user || ! $user->tanda_tangan) {
                 return null;
             }
 
-            $signaturePath = public_path('storage/' . $user->tanda_tangan);
+            $signaturePath = public_path('storage/'.$user->tanda_tangan);
 
-            if (!file_exists($signaturePath)) {
+            if (! file_exists($signaturePath)) {
                 return null;
             }
 
@@ -815,14 +844,16 @@ class SuratCutiController extends Controller
                 try {
                     $imageData = base64_encode(file_get_contents($signaturePath));
                     $imageMime = mime_content_type($signaturePath);
+
                     return "data:{$imageMime};base64,{$imageData}";
                 } catch (\Exception $e) {
-                    Log::error('Signature processing error: ' . $e->getMessage());
+                    Log::error('Signature processing error: '.$e->getMessage());
+
                     return null;
                 }
             } else {
                 // Untuk preview, gunakan asset URL
-                return asset('storage/' . $user->tanda_tangan);
+                return asset('storage/'.$user->tanda_tangan);
             }
         };
     }
@@ -835,13 +866,11 @@ class SuratCutiController extends Controller
         $bulan = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
             5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
-            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+            9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
         ];
 
-        return $date->day . ' ' . $bulan[$date->month] . ' ' . $date->year;
+        return $date->day.' '.$bulan[$date->month].' '.$date->year;
     }
-
-
 
     /**
      * Generate nomor surat yang konsisten
@@ -850,6 +879,7 @@ class SuratCutiController extends Controller
     {
         $tahun = $suratCuti->created_at->year;
         $id = str_pad($suratCuti->id, 4, '0', STR_PAD_LEFT);
+
         return "800.1.11.4/{$id}/{$tahun}";
     }
 
@@ -878,7 +908,7 @@ class SuratCutiController extends Controller
                 'disposisiList' => $disposisiList,
                 'isFlexibleApproval' => false, // Always false for approved surat
                 'approvalStatus' => $this->getApprovalStatus($suratCuti),
-                'completionRate' => ['overall' => 100, 'signatures' => 100, 'parafs' => 100]
+                'completionRate' => ['overall' => 100, 'signatures' => 100, 'parafs' => 100],
             ];
 
             // Select template based on unit kerja
@@ -898,7 +928,7 @@ class SuratCutiController extends Controller
                 'surat_cuti_id' => $suratCuti->id,
                 'downloaded_by' => auth()->id(),
                 'filename' => $filename,
-                'template' => $template
+                'template' => $template,
             ]);
 
             return $pdf->download($filename);
@@ -907,10 +937,10 @@ class SuratCutiController extends Controller
             \Log::error('PDF download error', [
                 'surat_cuti_id' => $suratCuti->id,
                 'user_id' => auth()->id(),
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'Terjadi kesalahan saat menggenerate PDF: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat menggenerate PDF: '.$e->getMessage());
         }
     }
 
@@ -920,20 +950,20 @@ class SuratCutiController extends Controller
     public function adminDashboard()
     {
         // Hanya admin dan kadin yang bisa akses
-        if (!in_array(auth()->user()->role, ['admin', 'kadin'])) {
+        if (! in_array(auth()->user()->role, ['admin', 'kadin'])) {
             abort(403, 'Unauthorized');
         }
 
         $pendingSuratCuti = SuratCuti::whereIn('status', ['draft', 'proses'])
-                                   ->with(['pengaju', 'jenisCuti'])
-                                   ->orderBy('created_at', 'desc')
-                                   ->get();
+            ->with(['pengaju', 'jenisCuti'])
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         $approvedSuratCuti = SuratCuti::where('status', 'disetujui')
-                                    ->with(['pengaju', 'jenisCuti'])
-                                    ->orderBy('updated_at', 'desc')
-                                    ->limit(10)
-                                    ->get();
+            ->with(['pengaju', 'jenisCuti'])
+            ->orderBy('updated_at', 'desc')
+            ->limit(10)
+            ->get();
 
         return view('admin.surat-cuti.dashboard', compact('pendingSuratCuti', 'approvedSuratCuti'));
     }
@@ -944,7 +974,7 @@ class SuratCutiController extends Controller
     public function bulkApproveAll()
     {
         // Hanya admin dan kadin yang bisa akses
-        if (!in_array(auth()->user()->role, ['admin', 'kadin'])) {
+        if (! in_array(auth()->user()->role, ['admin', 'kadin'])) {
             abort(403, 'Unauthorized');
         }
 
@@ -967,11 +997,11 @@ class SuratCutiController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Berhasil menyetujui {$approvedCount} surat cuti",
-                'approved_count' => $approvedCount
+                'approved_count' => $approvedCount,
             ]);
         } else {
             return redirect()->route('admin.surat-cuti.admin-dashboard')
-                           ->with('success', "Berhasil menyetujui {$approvedCount} surat cuti");
+                ->with('success', "Berhasil menyetujui {$approvedCount} surat cuti");
         }
     }
 
@@ -981,7 +1011,7 @@ class SuratCutiController extends Controller
     public function bulkRejectAll()
     {
         // Hanya admin dan kadin yang bisa akses
-        if (!in_array(auth()->user()->role, ['admin', 'kadin'])) {
+        if (! in_array(auth()->user()->role, ['admin', 'kadin'])) {
             abort(403, 'Unauthorized');
         }
 
@@ -999,11 +1029,11 @@ class SuratCutiController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => "Berhasil menolak {$rejectedCount} surat cuti",
-                'rejected_count' => $rejectedCount
+                'rejected_count' => $rejectedCount,
             ]);
         } else {
             return redirect()->route('admin.surat-cuti.admin-dashboard')
-                           ->with('success', "Berhasil menolak {$rejectedCount} surat cuti");
+                ->with('success', "Berhasil menolak {$rejectedCount} surat cuti");
         }
     }
 
@@ -1019,18 +1049,18 @@ class SuratCutiController extends Controller
         if (stripos($unitKerja, 'puskesmas') !== false) {
             $disposisiList = [
                 ['jabatan' => 'Kepala Puskesmas', 'tipe_disposisi' => 'paraf'],
-                ['jabatan' => 'KADIN', 'tipe_disposisi' => 'ttd']
+                ['jabatan' => 'KADIN', 'tipe_disposisi' => 'ttd'],
             ];
         } elseif (stripos($unitKerja, 'sekretariat') !== false) {
             $disposisiList = [
                 ['jabatan' => 'Sekretaris Dinas', 'tipe_disposisi' => 'paraf'],
-                ['jabatan' => 'KADIN', 'tipe_disposisi' => 'ttd']
+                ['jabatan' => 'KADIN', 'tipe_disposisi' => 'ttd'],
             ];
         } else {
             // Bidang atau unit lain
             $disposisiList = [
                 ['jabatan' => 'Kepala Bidang', 'tipe_disposisi' => 'paraf'],
-                ['jabatan' => 'KADIN', 'tipe_disposisi' => 'ttd']
+                ['jabatan' => 'KADIN', 'tipe_disposisi' => 'ttd'],
             ];
         }
 
@@ -1043,7 +1073,7 @@ class SuratCutiController extends Controller
                 'tipe_disposisi' => $disposisi['tipe_disposisi'],
                 'status' => 'sudah',
                 'tanggal' => now(),
-                'catatan' => 'Auto-approved by admin for debugging'
+                'catatan' => 'Auto-approved by admin for debugging',
             ]);
         }
     }

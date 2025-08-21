@@ -152,6 +152,10 @@
                                             {{ auth()->user()->nip }}
                                         </div>
                                     </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Golongan/Ruang</label>
+                                        <input type="text" name="golongan" value="{{ old('golongan', auth()->user()->golongan) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="III/a">
+                                    </div>
                                 </div>
                                 <div class="space-y-4">
                                     <div>
@@ -165,6 +169,10 @@
                                     <div class="mt-1 p-2 bg-gray-50 border border-gray-200 rounded-md text-gray-700">
                                             {{ auth()->user()->unit_kerja }}
                                         </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Masa Kerja</label>
+                                        <input type="text" name="masa_kerja" value="{{ old('masa_kerja', auth()->user()->masa_kerja) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="5 Tahun 0 Bulan">
                                     </div>
                                 </div>
                             </div>
