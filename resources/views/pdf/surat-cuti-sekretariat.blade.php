@@ -134,6 +134,7 @@
             line-height: 11px;
             font-weight: bold;
             background-color: white;
+            font-family: 'DejaVu Sans', sans-serif;
         }
 
         .checkbox.checked {
@@ -366,7 +367,7 @@
                 <td>{{ $disposisi->user->nama ?? 'N/A' }}</td>
                 <td>
                     @if($disposisi->status === 'sudah')
-                        <span style="color: #059669; font-weight: bold;">✅ APPROVED</span>
+                        <span style="color: #059669; font-weight: bold;"><span class="checkbox">✓</span> APPROVED</span>
                     @else
                         <span style="color: #d97706; font-weight: bold;">⏳ PENDING</span>
                     @endif
@@ -395,7 +396,7 @@
                     </div>
                     <div style="height: 80px; margin: 20px 0;">
                         @if($ttd->status === 'sudah')
-                            <div style="color: #059669; font-weight: bold; margin-bottom: 10px;">✅ DISETUJUI</div>
+                            <div style="color: #059669; font-weight: bold; margin-bottom: 10px;"><span class="checkbox">✓</span> DISETUJUI</div>
                             <div style="font-size: 10px;">{{ $ttd->tanggal ? $ttd->tanggal->format('d F Y') : '' }}</div>
                         @else
                             <div style="color: #d97706; font-style: italic;">( Menunggu Tanda Tangan )</div>
@@ -419,7 +420,7 @@
                     </div>
                     <div style="height: 80px; margin: 20px 0;">
                         @if($ttd->status === 'sudah')
-                            <div style="color: #059669; font-weight: bold; margin-bottom: 10px;">✅ DISETUJUI</div>
+                            <div style="color: #059669; font-weight: bold; margin-bottom: 10px;"><span class="checkbox">✓</span> DISETUJUI</div>
                             <div style="font-size: 10px;">{{ $ttd->tanggal ? $ttd->tanggal->format('d F Y') : '' }}</div>
                             @if($ttd->catatan)
                                 <div style="font-size: 9px; color: #6b7280; margin-top: 5px;">{{ $ttd->catatan }}</div>
