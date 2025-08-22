@@ -102,11 +102,16 @@ class SuratCutiController extends Controller
         $validatedData = $request->validate($rules);
 
  
+ 
+ 
+ 
         if ($user->jenis_pegawai === 'ASN') {
             $validatedData['golongan_ruang'] = $request->input('golongan_ruang');
             $validatedData['masa_jabatan'] = $request->input('masa_jabatan');
         }
 
+ 
+ 
  
         // Update informasi golongan dan masa kerja pengguna
         $golongan = $request->input('golongan', $user->golongan);
@@ -124,6 +129,7 @@ class SuratCutiController extends Controller
 
         unset($validatedData['golongan'], $validatedData['masa_kerja']);
 
+ 
  
         // Hitung jumlah hari cuti
         $tanggalAwal = \Carbon\Carbon::parse($request->tanggal_awal);
@@ -749,6 +755,8 @@ class SuratCutiController extends Controller
                             }
  
  
+ 
+ 
                         }
                     }
 
@@ -779,6 +787,7 @@ class SuratCutiController extends Controller
                             $pejabatStatus = 'disetujui';
                         } elseif ($suratCuti->status === 'ditolak') {
                             $pejabatStatus = 'tidak_disetujui';
+ 
  
                         }
                     }
