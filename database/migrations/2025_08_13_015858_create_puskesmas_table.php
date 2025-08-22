@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('puskesmas', function (Blueprint $table) {
             $table->id();
+            $table->string('nama_puskesmas');
+            $table->string('kepala_puskesmas')->nullable();
+            $table->string('nip_kepala')->nullable();
+            $table->string('tanda_tangan')->nullable();
+            $table->string('cap_stempel')->nullable();
             $table->timestamps();
         });
     }
