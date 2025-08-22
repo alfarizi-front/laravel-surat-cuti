@@ -87,14 +87,10 @@
             display: inline-block;
             margin-right: 5px;
             vertical-align: middle;
-        }
-        
-        .checkbox.checked::after {
-            content: '✓';
-            display: block;
             text-align: center;
-            line-height: 11px;
+            line-height: 13px;
             font-weight: bold;
+            font-family: 'DejaVu Sans', sans-serif;
         }
         
         .signature-section {
@@ -354,23 +350,27 @@
             @php
                 $atasanLangsung = $disposisiList->where('jabatan', 'like', '%Kepala Puskesmas%')->first() ??
                                  $disposisiList->where('jabatan', 'like', '%Kepala%')->first();
-                $keputusanAtasan = $atasanLangsung ? ($atasanLangsung->status === 'sudah' ? 'disetujui' : 'pending') : 'pending';
+ 
+                $keputusanAtasan = $pertimbangan_atasan ?? ($suratCuti->pertimbangan_atasan ?? '');
+ 
+                $keputusanAtasan = strtolower($pertimbangan_atasan ?? ($suratCuti->pertimbangan_atasan ?? ''));
+ 
             @endphp
             <tr>
                 <td style="width: 25%;">
-                    <span class="checkbox {{ $keputusanAtasan == 'disetujui' ? 'checked' : '' }}"></span>
+                    <span class="checkbox">{{ $keputusanAtasan == 'disetujui' ? '✓' : '' }}</span>
                     <strong>DISETUJUI</strong>
                 </td>
                 <td style="width: 25%;">
-                    <span class="checkbox {{ $keputusanAtasan == 'perubahan' ? 'checked' : '' }}"></span>
+                    <span class="checkbox">{{ $keputusanAtasan == 'perubahan' ? '✓' : '' }}</span>
                     <strong>PERUBAHAN</strong>
                 </td>
                 <td style="width: 25%;">
-                    <span class="checkbox {{ $keputusanAtasan == 'ditangguhkan' ? 'checked' : '' }}"></span>
+                    <span class="checkbox">{{ $keputusanAtasan == 'ditangguhkan' ? '✓' : '' }}</span>
                     <strong>DITANGGUHKAN</strong>
                 </td>
                 <td style="width: 25%;">
-                    <span class="checkbox {{ $keputusanAtasan == 'tidak_disetujui' ? 'checked' : '' }}"></span>
+                    <span class="checkbox">{{ $keputusanAtasan == 'tidak_disetujui' ? '✓' : '' }}</span>
                     <strong>TIDAK DISETUJUI</strong>
                 </td>
             </tr>
@@ -411,23 +411,27 @@
         <tbody>
             @php
                 $kadin = $disposisiList->where('jabatan', 'KADIN')->first();
-                $keputusanKepala = $kadin ? ($kadin->status === 'sudah' ? 'disetujui' : 'pending') : 'pending';
+ 
+                $keputusanKepala = $keputusan_pejabat ?? ($suratCuti->keputusan_pejabat ?? '');
+ 
+                $keputusanKepala = strtolower($keputusan_pejabat ?? ($suratCuti->keputusan_pejabat ?? ''));
+ 
             @endphp
             <tr>
                 <td style="width: 25%;">
-                    <span class="checkbox {{ $keputusanKepala == 'disetujui' ? 'checked' : '' }}"></span>
+                    <span class="checkbox">{{ $keputusanKepala == 'disetujui' ? '✓' : '' }}</span>
                     <strong>DISETUJUI</strong>
                 </td>
                 <td style="width: 25%;">
-                    <span class="checkbox {{ $keputusanKepala == 'perubahan' ? 'checked' : '' }}"></span>
+                    <span class="checkbox">{{ $keputusanKepala == 'perubahan' ? '✓' : '' }}</span>
                     <strong>PERUBAHAN</strong>
                 </td>
                 <td style="width: 25%;">
-                    <span class="checkbox {{ $keputusanKepala == 'ditangguhkan' ? 'checked' : '' }}"></span>
+                    <span class="checkbox">{{ $keputusanKepala == 'ditangguhkan' ? '✓' : '' }}</span>
                     <strong>DITANGGUHKAN</strong>
                 </td>
                 <td style="width: 25%;">
-                    <span class="checkbox {{ $keputusanKepala == 'tidak_disetujui' ? 'checked' : '' }}"></span>
+                    <span class="checkbox">{{ $keputusanKepala == 'tidak_disetujui' ? '✓' : '' }}</span>
                     <strong>TIDAK DISETUJUI</strong>
                 </td>
             </tr>

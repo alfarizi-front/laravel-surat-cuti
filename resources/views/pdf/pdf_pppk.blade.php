@@ -80,6 +80,25 @@
             margin-top: 0;
             color: #2c5aa0;
         }
+        .checkbox {
+            width: 15px;
+            height: 15px;
+            border: 2px solid #000;
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: middle;
+            text-align: center;
+            line-height: 13px;
+            font-weight: bold;
+ 
+            font-family: 'DejaVu Sans', sans-serif;
+ 
+
+            font-family: 'DejaVu Sans', sans-serif;
+
+ 
+ 
+        }
         @page {
             margin: 1cm;
         }
@@ -168,9 +187,12 @@
                     <td>{{ $d->user->nama ?? '-' }}</td>
                     <td>{{ $d->jabatan }}</td>
                     <td style="text-align:center;">
-                        @if($d->status === 'sudah') DISETUJUI
-                        @elseif($d->status === 'ditolak') DITOLAK
-                        @else PENDING
+                        @if($d->status === 'sudah')
+                            <span class="checkbox">✓</span> DISETUJUI
+                        @elseif($d->status === 'ditolak')
+                            DITOLAK
+                        @else
+                            PENDING
                         @endif
                     </td>
                     <td style="text-align:center;">{{ $d->tanggal ? $d->tanggal->format('d/m/Y') : '-' }}</td>
