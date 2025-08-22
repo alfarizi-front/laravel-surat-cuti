@@ -110,6 +110,22 @@
             vertical-align: middle;
         }
 
+        .checkbox {
+            width: 15px;
+            height: 15px;
+            border: 2px solid #000;
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: middle;
+            text-align: center;
+            line-height: 13px;
+            font-weight: bold;
+
+            font-family: 'DejaVu Sans', sans-serif;
+
+        main
+        }
+
         .footer {
             margin-top: 20px;
             text-align: center;
@@ -119,24 +135,6 @@
             padding-top: 10px;
         }
 
-        .checkbox {
-            width: 15px;
-            height: 15px;
-            border: 2px solid #000;
-            display: inline-block;
-            margin-right: 8px;
-            vertical-align: middle;
-            text-align: center;
-            line-height: 11px;
-            font-weight: bold;
-            background-color: white;
-        }
-
-        .checkbox.checked {
-            background-color: white;
-            color: black;
-            font-weight: bold;
-        }
 
         @page {
             margin: 2cm;
@@ -307,7 +305,7 @@
                 <td>{{ $disposisi->user ? $disposisi->user->nama : 'N/A' }}</td>
                 <td>
                     @if($disposisi->status === 'sudah')
-                        <span style="color: #000; font-weight: bold;">DISETUJUI</span>
+                        <span style="color: #000; font-weight: bold;"><span class="checkbox">✓</span>DISETUJUI</span>
                     @else
                         <span style="color: #666;">PENDING</span>
                     @endif
@@ -353,7 +351,7 @@
                         @endphp
 
                         @if($ttd->status === 'sudah')
-                            <div style="color: #000; font-weight: bold; margin-bottom: 5px;">DISETUJUI</div>
+                            <div style="color: #000; font-weight: bold; margin-bottom: 5px;"><span class="checkbox">✓</span>DISETUJUI</div>
                             <div style="font-size: 10px;">{{ $ttd->tanggal ? $ttd->tanggal->format('d F Y') : '' }}</div>
 
                             @if($ttdSignature && ($ttdSignature->signature_path || $ttdSignature->stamp_path))
@@ -396,7 +394,7 @@
                         @endphp
 
                         @if($ttd->status === 'sudah')
-                            <div style="color: #000; font-weight: bold; margin-bottom: 5px;">DISETUJUI</div>
+                            <div style="color: #000; font-weight: bold; margin-bottom: 5px;"><span class="checkbox">✓</span>DISETUJUI</div>
                             <div style="font-size: 10px;">{{ $ttd->tanggal ? $ttd->tanggal->format('d F Y') : '' }}</div>
 
                             @if($ttdSignature && ($ttdSignature->signature_path || $ttdSignature->stamp_path))

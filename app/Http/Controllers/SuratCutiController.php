@@ -87,6 +87,8 @@ class SuratCutiController extends Controller
             'tanggal_awal' => 'required|date|after_or_equal:today',
             'tanggal_akhir' => 'required|date|after_or_equal:tanggal_awal',
             'alasan' => 'required|string|max:1000',
+            'golongan' => 'nullable|string|max:50',
+            'masa_kerja' => 'nullable|string|max:50',
         ];
 
         if ($user->jenis_pegawai === 'ASN') {
@@ -99,11 +101,30 @@ class SuratCutiController extends Controller
 
         $validatedData = $request->validate($rules);
 
+ 
         if ($user->jenis_pegawai === 'ASN') {
             $validatedData['golongan_ruang'] = $request->input('golongan_ruang');
             $validatedData['masa_jabatan'] = $request->input('masa_jabatan');
         }
 
+ 
+        // Update informasi golongan dan masa kerja pengguna
+        $golongan = $request->input('golongan', $user->golongan);
+        $masaKerja = $request->input('masa_kerja', $user->masa_kerja);
+
+        if ($request->filled('golongan') || $request->filled('masa_kerja')) {
+            $user->update([
+                'golongan' => $golongan,
+                'masa_kerja' => $masaKerja,
+            ]);
+        }
+
+        $validatedData['golongan_ruang'] = $golongan;
+        $validatedData['masa_jabatan'] = $masaKerja;
+
+        unset($validatedData['golongan'], $validatedData['masa_kerja']);
+
+ 
         // Hitung jumlah hari cuti
         $tanggalAwal = \Carbon\Carbon::parse($request->tanggal_awal);
         $tanggalAkhir = \Carbon\Carbon::parse($request->tanggal_akhir);
@@ -726,6 +747,39 @@ class SuratCutiController extends Controller
                             } catch (\Exception $e) {
                                 $pejabat_cap_base64 = null;
                             }
+ 
+ 
+                        }
+                    }
+
+                    $atasanStatus = '';
+                    if ($atasanParaf) {
+                        if ($atasanParaf->status === 'sudah') {
+                            $atasanStatus = 'disetujui';
+                        } elseif ($atasanParaf->status === 'ditolak') {
+                            $atasanStatus = 'tidak_disetujui';
+                        }
+                    } else {
+                        if ($suratCuti->status === 'disetujui') {
+                            $atasanStatus = 'disetujui';
+                        } elseif ($suratCuti->status === 'ditolak') {
+                            $atasanStatus = 'tidak_disetujui';
+                        }
+                    }
+
+                    $pejabatStatus = '';
+                    if ($kadinDisposisi) {
+                        if ($kadinDisposisi->status === 'sudah') {
+                            $pejabatStatus = 'disetujui';
+                        } elseif ($kadinDisposisi->status === 'ditolak') {
+                            $pejabatStatus = 'tidak_disetujui';
+                        }
+                    } else {
+                        if ($suratCuti->status === 'disetujui') {
+                            $pejabatStatus = 'disetujui';
+                        } elseif ($suratCuti->status === 'ditolak') {
+                            $pejabatStatus = 'tidak_disetujui';
+ 
                         }
                     }
 
@@ -769,8 +823,8 @@ class SuratCutiController extends Controller
                         'pejabat_cap_base64' => $pejabat_cap_base64,
 
                         // Status (opsional, mempengaruhi centang di bagian VII/VIII)
-                        'pertimbangan_atasan' => ($atasanParaf && $atasanParaf->status === 'sudah') ? 'disetujui' : '',
-                        'keputusan_pejabat' => ($kadinDisposisi && $kadinDisposisi->status === 'sudah') ? 'disetujui' : '',
+                        'pertimbangan_atasan' => $atasanStatus,
+                        'keputusan_pejabat' => $pejabatStatus,
                     ];
 
                     // Enhanced PDF with flexible approval status

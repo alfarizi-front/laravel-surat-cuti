@@ -29,6 +29,8 @@ class User extends Authenticatable
         'nip',
         'cap_stempel',
         'gunakan_cap',
+        'golongan',
+        'masa_kerja',
     ];
 
     /**
@@ -100,6 +102,7 @@ class User extends Authenticatable
     public function getCutiTahunan($tahun = null)
     {
         $tahun = $tahun ?? date('Y');
+
         return CutiTahunan::getOrCreateForUser($this->id, $tahun);
     }
 

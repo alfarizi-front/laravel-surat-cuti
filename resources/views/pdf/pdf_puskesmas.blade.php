@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Cuti - {{ $puskesmas->nama_puskesmas ?? 'Puskesmas' }}</title>
+    <title>Surat Cuti - {{ $puskesmas->nama ?? 'Puskesmas' }}</title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.4; margin: 20px; }
         .header-section { display: flex; justify-content: space-between; margin-bottom: 20px; }
@@ -42,7 +42,7 @@
 <body>
 @php
     // Data Puskesmas
-    $puskesmasNama = $puskesmas->nama_puskesmas ?? 'Puskesmas';
+    $puskesmasNama = $puskesmas->nama ?? 'Puskesmas';
     $puskesmasAlamat = $puskesmas->alamat ?? '';
     $kepalaPuskesmas = $puskesmas->kepala_puskesmas_lengkap ?? $puskesmas->kepala_puskesmas ?? '[Kepala Puskesmas]';
     $nipKepala = $puskesmas->nip_kepala ?? '[NIP Kepala]';

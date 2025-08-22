@@ -19,24 +19,11 @@ class RegisteredUserController extends Controller
      * Display the registration view.
      */
     private function getUnitKerja(): array
-    { 
+    {
         return [
-            // Puskesmas
-            'Puskesmas kemiri' => 'Puskesmas kemiri',
-            'Puskesmas Utara' => 'Puskesmas Utara',
-            'Puskesmas Selatan' => 'Puskesmas Selatan',
-            'Puskesmas Timur' => 'Puskesmas Timur',
-            'Puskesmas Barat' => 'Puskesmas Barat',
-            'Puskesmas Tengah' => 'Puskesmas Tengah',
-            'Puskesmas Rawat Inap' => 'Puskesmas Rawat Inap',
-            'Puskesmas Induk' => 'Puskesmas Induk',
-
-            // Unit Kerja Lainnya
+            'Puskesmas' => 'Puskesmas',
             'Sekretariat' => 'Sekretariat',
-            'Bidang Kesehatan Masyarakat' => 'Bidang Kesehatan Masyarakat',
-            'Bidang Pencegahan dan Pengendalian Penyakit' => 'Bidang Pencegahan dan Pengendalian Penyakit',
-            'Bidang Pelayanan Kesehatan' => 'Bidang Pelayanan Kesehatan',
-            'Bidang Sumber Daya Kesehatan' => 'Bidang Sumber Daya Kesehatan',
+            'Bidang' => 'Bidang',
         ];
     }
 
@@ -63,7 +50,7 @@ class RegisteredUserController extends Controller
                 'Kepala Bidang' => 'Kepala Bidang',
                 'Kepala Seksi' => 'Kepala Seksi',
                 'Staff Bidang' => 'Staff Bidang',
-            ]
+            ],
         ];
     }
 
@@ -107,7 +94,7 @@ class RegisteredUserController extends Controller
             $jabatanValid = isset($jabatanOptions['bidang'][$jabatan]);
         }
 
-        if (!$jabatanValid) {
+        if (! $jabatanValid) {
             throw ValidationException::withMessages([
                 'jabatan' => ['Jabatan tidak valid untuk unit kerja yang dipilih'],
             ]);

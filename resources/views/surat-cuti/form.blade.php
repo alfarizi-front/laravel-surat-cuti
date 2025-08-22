@@ -64,6 +64,28 @@
                                     <input type="text" value="{{ auth()->user()->unit_kerja }}" class="pl-10 block w-full rounded-md border-gray-300 shadow-sm bg-white" readonly>
                                 </div>
                             </div>
+
+                            <!-- Golongan/Ruang -->
+                            <div class="relative">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Golongan/Ruang</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-layer-group text-gray-400"></i>
+                                    </div>
+                                    <input type="text" name="golongan" value="{{ old('golongan', auth()->user()->golongan) }}" class="pl-10 block w-full rounded-md border-gray-300 shadow-sm bg-white" placeholder="III/a">
+                                </div>
+                            </div>
+
+                            <!-- Masa Kerja -->
+                            <div class="relative">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Masa Kerja</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fas fa-hourglass-half text-gray-400"></i>
+                                    </div>
+                                    <input type="text" name="masa_kerja" value="{{ old('masa_kerja', auth()->user()->masa_kerja) }}" class="pl-10 block w-full rounded-md border-gray-300 shadow-sm bg-white" placeholder="5 Tahun 0 Bulan">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
