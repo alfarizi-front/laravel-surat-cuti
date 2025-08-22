@@ -90,7 +90,10 @@
             text-align: center;
             line-height: 13px;
             font-weight: bold;
+
             font-family: 'DejaVu Sans', sans-serif;
+
+ main
         }
         @page {
             margin: 1cm;
