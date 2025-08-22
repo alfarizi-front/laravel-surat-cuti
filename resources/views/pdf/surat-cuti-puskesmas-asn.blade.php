@@ -156,13 +156,13 @@
                 <td><strong>Jabatan</strong></td>
                 <td>{{ $suratCuti->pengaju->jabatan }}</td>
                 <td><strong>Masa Kerja</strong></td>
-                <td>{{ $masa_kerja ?? $suratCuti->pengaju->masa_kerja ?? '-' }}</td>
+                <td>{{ $suratCuti->masa_jabatan ?? $suratCuti->pengaju->masa_kerja ?? '-' }}</td>
             </tr>
             <tr>
                 <td><strong>Unit Kerja</strong></td>
                 <td>{{ $suratCuti->pengaju->unit_kerja }}</td>
                 <td><strong>Gol./Ruang</strong></td>
-                <td>{{ $suratCuti->pengaju->golongan ?? $suratCuti->pengaju->pangkat ?? '-' }}</td>
+                <td>{{ $suratCuti->golongan_ruang ?? $suratCuti->pengaju->golongan ?? $suratCuti->pengaju->pangkat ?? '-' }}</td>
             </tr>
         </tbody>
     </table>
@@ -279,7 +279,7 @@
         </thead>
         <tbody>
             <tr>
-                <td rowspan="4" style="width: 30%; vertical-align: top;">
+                <td style="width: 30%; vertical-align: top;">
                     <strong>1. CUTI TAHUNAN</strong><br><br>
                     <table style="width: 100%; border: none;">
                         <tr style="border: none;">
@@ -307,20 +307,8 @@
                         </tr>
                     </table>
                 </td>
-                <td style="width: 35%;"><strong>2. CUTI BESAR</strong></td>
                 <td style="width: 35%;"></td>
-            </tr>
-            <tr>
-                <td><strong>3. CUTI SAKIT</strong></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td><strong>4. CUTI MELAHIRKAN</strong></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td><strong>5. CUTI KARENA ALASAN PENTING</strong></td>
-                <td></td>
+                <td style="width: 35%;"></td>
             </tr>
         </tbody>
     </table>
@@ -362,7 +350,11 @@
             @php
                 $atasanLangsung = $disposisiList->where('jabatan', 'like', '%Kepala Puskesmas%')->first() ??
                                  $disposisiList->where('jabatan', 'like', '%Kepala%')->first();
+ 
                 $keputusanAtasan = $pertimbangan_atasan ?? ($suratCuti->pertimbangan_atasan ?? '');
+ 
+                $keputusanAtasan = strtolower($pertimbangan_atasan ?? ($suratCuti->pertimbangan_atasan ?? ''));
+ 
             @endphp
             <tr>
                 <td style="width: 25%;">
@@ -419,7 +411,11 @@
         <tbody>
             @php
                 $kadin = $disposisiList->where('jabatan', 'KADIN')->first();
+ 
                 $keputusanKepala = $keputusan_pejabat ?? ($suratCuti->keputusan_pejabat ?? '');
+ 
+                $keputusanKepala = strtolower($keputusan_pejabat ?? ($suratCuti->keputusan_pejabat ?? ''));
+ 
             @endphp
             <tr>
                 <td style="width: 25%;">

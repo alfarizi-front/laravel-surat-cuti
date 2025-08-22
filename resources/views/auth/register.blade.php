@@ -266,11 +266,11 @@
             let options = [];
 
             // Determine which jabatan options to show
-            if (unitKerja.includes('Puskesmas')) {
+            if (unitKerja === 'Puskesmas') {
                 options = jabatanOptions.puskesmas || {};
             } else if (unitKerja === 'Sekretariat') {
                 options = jabatanOptions.sekretariat || {};
-            } else if (unitKerja.includes('Bidang')) {
+            } else if (unitKerja === 'Bidang') {
                 options = jabatanOptions.bidang || {};
             }
 

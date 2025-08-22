@@ -114,7 +114,14 @@
             text-align: center;
             line-height: 13px;
             font-weight: bold;
+ 
             font-family: 'DejaVu Sans', sans-serif;
+ 
+
+            font-family: 'DejaVu Sans', sans-serif;
+
+      
+ 
         }
         
         .watermark {
