@@ -13,7 +13,11 @@ class Puskesmas extends Model
  
         'nama',
  
+ 
+        'nama',
+ 
         'nama_puskesmas',
+ 
  
         'kepala_puskesmas',
         'nip_kepala',

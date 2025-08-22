@@ -14,7 +14,11 @@ class PuskesmasSeeder extends Seeder
  
                 'nama' => 'Puskesmas '.$i,
  
+ 
+                'nama' => 'Puskesmas '.$i,
+ 
                 'nama_puskesmas' => 'Puskesmas '.$i,
+ 
  
             ]);
         }

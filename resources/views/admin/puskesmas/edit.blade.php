@@ -9,7 +9,11 @@
  
                     <h3 class="card-title">Edit Kepala - {{ $puskesma->nama }}</h3>
  
+ 
+                    <h3 class="card-title">Edit Kepala - {{ $puskesma->nama }}</h3>
+ 
                     <h3 class="card-title">Edit Kepala - {{ $puskesma->nama_puskesmas }}</h3>
+ 
  
                 </div>
                 <div class="card-body">
