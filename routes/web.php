@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\SuratCutiController;
 use App\Http\Controllers\DisposisiController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SuratCutiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,8 +18,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Public routes
-Route::get('/', fn() => view('welcome'));
-Route::get('/test', fn() => 'Laravel is working!');
+Route::get('/', fn () => view('welcome'));
+Route::get('/test', fn () => 'Laravel is working!');
 
 // Authentication routes
 Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
@@ -35,7 +35,7 @@ if (app()->environment('local')) {
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
-    
+
     // Core application routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -91,7 +91,7 @@ Route::middleware('auth')->group(function () {
 
     // Admin panel
     Route::prefix('admin')->name('admin.')->middleware('role:admin,kadin')->group(function () {
-        
+
         // User management
         Route::resource('users', \App\Http\Controllers\Admin\UserManagementController::class);
 
@@ -114,6 +114,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/bulk-upload', [\App\Http\Controllers\Admin\CapStempelController::class, 'bulkUpload'])->name('bulk-upload');
         });
 
+        Route::resource('puskesmas', \App\Http\Controllers\Admin\PuskesmasController::class)->only(['index', 'edit', 'update']);
+
         // Signature management
         Route::prefix('signatures')->name('signatures.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\SignatureController::class, 'index'])->name('index');
@@ -135,8 +137,8 @@ Route::middleware('auth')->group(function () {
     // Development debug routes
     if (app()->environment('local')) {
         Route::prefix('debug')->name('debug.')->group(function () {
-            Route::get('/signature', fn() => view('debug.signature'))->name('signature');
-            Route::get('/test-accounts', fn() => view('debug.test-accounts'))->name('test-accounts');
+            Route::get('/signature', fn () => view('debug.signature'))->name('signature');
+            Route::get('/test-accounts', fn () => view('debug.test-accounts'))->name('test-accounts');
         });
     }
 });
