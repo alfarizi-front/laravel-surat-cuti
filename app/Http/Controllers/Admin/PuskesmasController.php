@@ -16,19 +16,7 @@ class PuskesmasController extends Controller
 
     public function index()
     {
- 
-        $puskesmas = Puskesmas::orderBy('nama')->get();
- 
- 
-        $puskesmas = Puskesmas::orderBy('nama')->get();
- 
- 
-        $puskesmas = Puskesmas::orderBy('nama')->get();
- 
         $puskesmas = Puskesmas::orderBy('nama_puskesmas')->get();
-  main
- 
- 
 
         return view('admin.puskesmas.index', compact('puskesmas'));
     }
