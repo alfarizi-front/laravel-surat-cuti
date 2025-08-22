@@ -32,7 +32,7 @@
 
         .checkbox-section { margin: 10px 0; }
         .checkbox-row { margin: 5px 0; display: flex; align-items: center; }
-        .checkbox { display: inline-block; width: 15px; height: 15px; border: 1px solid #000; margin-right: 8px; text-align: center; line-height: 13px; font-size: 10pt; vertical-align: middle; }
+        .checkbox { display: inline-block; width: 15px; height: 15px; border: 1px solid #000; margin-right: 8px; text-align: center; line-height: 13px; font-size: 10pt; vertical-align: middle; font-family: 'DejaVu Sans', sans-serif; font-weight: bold; }
         .checkbox.checked { font-weight: bold; }
 
         .cuti-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
@@ -98,6 +98,9 @@
 
     $pejabatNama = $pejabat_berwenang ?? '[Nama Pejabat]';
     $pejabatNip = $nip_pejabat ?? '[NIP Pejabat]';
+
+    $pertimbanganStatus = strtolower($pertimbangan_atasan ?? '');
+    $keputusanStatus = strtolower($keputusan_pejabat ?? '');
 @endphp
 
     <!-- HEADER -->
@@ -246,10 +249,10 @@
     <div class="content-section">
         <div class="section-title">VII. PERTIMBANGAN ATASAN LANGSUNG</div>
         <div class="status-options">
-            <div class="status-option"><span class="checkbox {{ ($pertimbangan_atasan ?? '') === 'disetujui' ? 'checked' : '' }}">{{ ($pertimbangan_atasan ?? '') === 'disetujui' ? '✓' : '' }}</span> DISETUJUI</div>
-            <div class="status-option"><span class="checkbox {{ ($pertimbangan_atasan ?? '') === 'perubahan' ? 'checked' : '' }}">{{ ($pertimbangan_atasan ?? '') === 'perubahan' ? '✓' : '' }}</span> PERUBAHAN</div>
-            <div class="status-option"><span class="checkbox {{ ($pertimbangan_atasan ?? '') === 'ditangguhkan' ? 'checked' : '' }}">{{ ($pertimbangan_atasan ?? '') === 'ditangguhkan' ? '✓' : '' }}</span> DITANGGUHKAN</div>
-            <div class="status-option"><span class="checkbox {{ ($pertimbangan_atasan ?? '') === 'tidak_disetujui' ? 'checked' : '' }}">{{ ($pertimbangan_atasan ?? '') === 'tidak_disetujui' ? '✓' : '' }}</span> TIDAK DISETUJUI</div>
+            <div class="status-option"><span class="checkbox {{ $pertimbanganStatus === 'disetujui' ? 'checked' : '' }}">{{ $pertimbanganStatus === 'disetujui' ? '✓' : '' }}</span> DISETUJUI</div>
+            <div class="status-option"><span class="checkbox {{ $pertimbanganStatus === 'perubahan' ? 'checked' : '' }}">{{ $pertimbanganStatus === 'perubahan' ? '✓' : '' }}</span> PERUBAHAN</div>
+            <div class="status-option"><span class="checkbox {{ $pertimbanganStatus === 'ditangguhkan' ? 'checked' : '' }}">{{ $pertimbanganStatus === 'ditangguhkan' ? '✓' : '' }}</span> DITANGGUHKAN</div>
+            <div class="status-option"><span class="checkbox {{ $pertimbanganStatus === 'tidak_disetujui' ? 'checked' : '' }}">{{ $pertimbanganStatus === 'tidak_disetujui' ? '✓' : '' }}</span> TIDAK DISETUJUI</div>
         </div>
 
         <div class="signature-section">
@@ -282,10 +285,10 @@
     <div class="content-section">
         <div class="section-title">VIII. KEPUTUSAN PEJABAT YANG BERWENANG MEMBERIKAN CUTI</div>
         <div class="status-options">
-            <div class="status-option"><span class="checkbox {{ ($keputusan_pejabat ?? '') === 'disetujui' ? 'checked' : '' }}">{{ ($keputusan_pejabat ?? '') === 'disetujui' ? '✓' : '' }}</span> DISETUJUI</div>
-            <div class="status-option"><span class="checkbox {{ ($keputusan_pejabat ?? '') === 'perubahan' ? 'checked' : '' }}">{{ ($keputusan_pejabat ?? '') === 'perubahan' ? '✓' : '' }}</span> PERUBAHAN</div>
-            <div class="status-option"><span class="checkbox {{ ($keputusan_pejabat ?? '') === 'ditangguhkan' ? 'checked' : '' }}">{{ ($keputusan_pejabat ?? '') === 'ditangguhkan' ? '✓' : '' }}</span> DITANGGUHKAN</div>
-            <div class="status-option"><span class="checkbox {{ ($keputusan_pejabat ?? '') === 'tidak_disetujui' ? 'checked' : '' }}">{{ ($keputusan_pejabat ?? '') === 'tidak_disetujui' ? '✓' : '' }}</span> TIDAK DISETUJUI</div>
+            <div class="status-option"><span class="checkbox {{ $keputusanStatus === 'disetujui' ? 'checked' : '' }}">{{ $keputusanStatus === 'disetujui' ? '✓' : '' }}</span> DISETUJUI</div>
+            <div class="status-option"><span class="checkbox {{ $keputusanStatus === 'perubahan' ? 'checked' : '' }}">{{ $keputusanStatus === 'perubahan' ? '✓' : '' }}</span> PERUBAHAN</div>
+            <div class="status-option"><span class="checkbox {{ $keputusanStatus === 'ditangguhkan' ? 'checked' : '' }}">{{ $keputusanStatus === 'ditangguhkan' ? '✓' : '' }}</span> DITANGGUHKAN</div>
+            <div class="status-option"><span class="checkbox {{ $keputusanStatus === 'tidak_disetujui' ? 'checked' : '' }}">{{ $keputusanStatus === 'tidak_disetujui' ? '✓' : '' }}</span> TIDAK DISETUJUI</div>
         </div>
 
         <div class="signature-section">

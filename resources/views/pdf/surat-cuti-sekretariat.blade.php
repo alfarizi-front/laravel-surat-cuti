@@ -134,6 +134,7 @@
             line-height: 11px;
             font-weight: bold;
             background-color: white;
+            font-family: 'DejaVu Sans', sans-serif;
         }
 
         .checkbox.checked {
