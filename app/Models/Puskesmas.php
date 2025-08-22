@@ -10,7 +10,15 @@ class Puskesmas extends Model
     use HasFactory;
 
     protected $fillable = [
+ 
         'nama',
+ 
+ 
+        'nama',
+ 
+        'nama_puskesmas',
+ 
+ 
         'kepala_puskesmas',
         'nip_kepala',
         'tanda_tangan',
