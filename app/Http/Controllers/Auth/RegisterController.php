@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules;
 
 class RegisterController extends Controller
@@ -19,22 +19,9 @@ class RegisterController extends Controller
     {
         // Data unit kerja yang tersedia
         $allUnitKerja = [
-            // Puskesmas
-            'Puskesmas Kota' => 'Puskesmas Kota',
-            'Puskesmas Utara' => 'Puskesmas Utara',
-            'Puskesmas Selatan' => 'Puskesmas Selatan',
-            'Puskesmas Timur' => 'Puskesmas Timur',
-            'Puskesmas Barat' => 'Puskesmas Barat',
-            'Puskesmas Tengah' => 'Puskesmas Tengah',
-            'Puskesmas Rawat Inap' => 'Puskesmas Rawat Inap',
-            'Puskesmas Induk' => 'Puskesmas Induk',
-
-            // Unit Kerja Lainnya
+            'Puskesmas' => 'Puskesmas',
             'Sekretariat' => 'Sekretariat',
-            'Bidang Kesehatan Masyarakat' => 'Bidang Kesehatan Masyarakat',
-            'Bidang Pencegahan dan Pengendalian Penyakit' => 'Bidang Pencegahan dan Pengendalian Penyakit',
-            'Bidang Pelayanan Kesehatan' => 'Bidang Pelayanan Kesehatan',
-            'Bidang Sumber Daya Kesehatan' => 'Bidang Sumber Daya Kesehatan',
+            'Bidang' => 'Bidang',
         ];
 
         // Data jabatan berdasarkan unit kerja
@@ -59,13 +46,11 @@ class RegisterController extends Controller
                 'Kepala Bidang' => 'Kepala Bidang',
                 'Kepala Seksi' => 'Kepala Seksi',
                 'Staff Bidang' => 'Staff Bidang',
-            ]
+            ],
         ];
 
         return view('auth.register', compact('allUnitKerja', 'jabatanOptions'));
     }
-
-
 
     /**
      * Handle registration request
@@ -75,7 +60,7 @@ class RegisterController extends Controller
         $validator = Validator::make($request->all(), [
             'nama' => ['required', 'string', 'max:255'],
             'nip' => ['nullable', 'string', 'max:20', 'unique:users'],
-            'unit_kerja' => ['required', 'string'],
+            'unit_kerja' => ['required', 'in:Puskesmas,Sekretariat,Bidang'],
             'jabatan' => ['required', 'string'],
             'jenis_pegawai' => ['required', 'in:ASN,PPPK'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
