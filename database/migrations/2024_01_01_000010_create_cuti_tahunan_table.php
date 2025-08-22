@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateCutiTahunanTable extends Migration
 {
     /**
      * Run the migrations.
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('cuti_pending')->default(0); // Cuti yang sedang pending
             $table->integer('sisa_cuti')->default(12); // Sisa cuti yang tersedia
             $table->timestamps();
-            
+
             // Unique constraint untuk user dan tahun
             $table->unique(['user_id', 'tahun']);
         });
@@ -33,4 +33,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('cuti_tahunan');
     }
-};
+}
