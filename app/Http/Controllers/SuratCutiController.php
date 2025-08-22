@@ -95,10 +95,19 @@ class SuratCutiController extends Controller
             $rules['alamat_selama_cuti'] = 'nullable|string|max:500';
             $rules['kontak_darurat'] = 'nullable|string|max:20';
             $rules['lampiran'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            $rules['golongan_ruang'] = 'nullable|string|max:50';
+            $rules['masa_jabatan'] = 'nullable|string|max:100';
         }
 
         $validatedData = $request->validate($rules);
 
+ 
+        if ($user->jenis_pegawai === 'ASN') {
+            $validatedData['golongan_ruang'] = $request->input('golongan_ruang');
+            $validatedData['masa_jabatan'] = $request->input('masa_jabatan');
+        }
+
+ 
         // Update informasi golongan dan masa kerja pengguna
         $golongan = $request->input('golongan', $user->golongan);
         $masaKerja = $request->input('masa_kerja', $user->masa_kerja);
@@ -115,6 +124,7 @@ class SuratCutiController extends Controller
 
         unset($validatedData['golongan'], $validatedData['masa_kerja']);
 
+ 
         // Hitung jumlah hari cuti
         $tanggalAwal = \Carbon\Carbon::parse($request->tanggal_awal);
         $tanggalAkhir = \Carbon\Carbon::parse($request->tanggal_akhir);
@@ -737,6 +747,8 @@ class SuratCutiController extends Controller
                             } catch (\Exception $e) {
                                 $pejabat_cap_base64 = null;
                             }
+ 
+ 
                         }
                     }
 
@@ -767,6 +779,7 @@ class SuratCutiController extends Controller
                             $pejabatStatus = 'disetujui';
                         } elseif ($suratCuti->status === 'ditolak') {
                             $pejabatStatus = 'tidak_disetujui';
+ 
                         }
                     }
 
@@ -775,9 +788,9 @@ class SuratCutiController extends Controller
                         'nama_pegawai' => $suratCuti->pengaju->nama,
                         'nip_pegawai' => $suratCuti->pengaju->nip,
                         'jabatan' => $suratCuti->pengaju->jabatan,
-                        'masa_kerja' => $suratCuti->pengaju->masa_kerja ?? '5 Tahun 0 Bulan',
+                        'masa_kerja' => $suratCuti->masa_jabatan ?? $suratCuti->pengaju->masa_kerja ?? '5 Tahun 0 Bulan',
                         'unit_kerja' => $suratCuti->pengaju->unit_kerja,
-                        'golongan' => $suratCuti->pengaju->golongan ?? 'III/a',
+                        'golongan' => $suratCuti->golongan_ruang ?? $suratCuti->pengaju->golongan ?? 'III/a',
 
                         // Data Surat
                         'tempat' => $suratCuti->pengaju->kota ?? 'Purworejo',
