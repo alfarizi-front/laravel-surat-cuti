@@ -19,7 +19,11 @@ class CreatePuskesmasTable extends Migration
  
             $table->string('nama');
  
+ 
+            $table->string('nama');
+ 
             $table->string('nama_puskesmas');
+ 
  
  
             $table->string('kepala_puskesmas')->nullable();

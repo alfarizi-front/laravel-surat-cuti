@@ -43,7 +43,11 @@
  
                                         <td>{{ $item->nama }}</td>
  
+ 
+                                        <td>{{ $item->nama }}</td>
+ 
                                         <td>{{ $item->nama_puskesmas }}</td>
+ 
  
  
                                         <td>{{ $item->kepala_puskesmas ?? '-' }}</td>
