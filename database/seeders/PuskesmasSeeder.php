@@ -10,7 +10,7 @@ class PuskesmasSeeder extends Seeder
     public function run(): void
     {
         for ($i = 1; $i <= 27; $i++) {
-            Puskesmas::create([
+            Puskesmas::firstOrCreate([
                 'nama_puskesmas' => 'Puskesmas '.$i,
             ]);
         }
