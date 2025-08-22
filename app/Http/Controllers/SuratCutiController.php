@@ -740,6 +740,36 @@ class SuratCutiController extends Controller
                         }
                     }
 
+                    $atasanStatus = '';
+                    if ($atasanParaf) {
+                        if ($atasanParaf->status === 'sudah') {
+                            $atasanStatus = 'disetujui';
+                        } elseif ($atasanParaf->status === 'ditolak') {
+                            $atasanStatus = 'tidak_disetujui';
+                        }
+                    } else {
+                        if ($suratCuti->status === 'disetujui') {
+                            $atasanStatus = 'disetujui';
+                        } elseif ($suratCuti->status === 'ditolak') {
+                            $atasanStatus = 'tidak_disetujui';
+                        }
+                    }
+
+                    $pejabatStatus = '';
+                    if ($kadinDisposisi) {
+                        if ($kadinDisposisi->status === 'sudah') {
+                            $pejabatStatus = 'disetujui';
+                        } elseif ($kadinDisposisi->status === 'ditolak') {
+                            $pejabatStatus = 'tidak_disetujui';
+                        }
+                    } else {
+                        if ($suratCuti->status === 'disetujui') {
+                            $pejabatStatus = 'disetujui';
+                        } elseif ($suratCuti->status === 'ditolak') {
+                            $pejabatStatus = 'tidak_disetujui';
+                        }
+                    }
+
                     $blankoData = [
                         // Data Pegawai
                         'nama_pegawai' => $suratCuti->pengaju->nama,
@@ -780,8 +810,8 @@ class SuratCutiController extends Controller
                         'pejabat_cap_base64' => $pejabat_cap_base64,
 
                         // Status (opsional, mempengaruhi centang di bagian VII/VIII)
-                        'pertimbangan_atasan' => ($atasanParaf && $atasanParaf->status === 'sudah') ? 'disetujui' : '',
-                        'keputusan_pejabat' => ($kadinDisposisi && $kadinDisposisi->status === 'sudah') ? 'disetujui' : '',
+                        'pertimbangan_atasan' => $atasanStatus,
+                        'keputusan_pejabat' => $pejabatStatus,
                     ];
 
                     // Enhanced PDF with flexible approval status

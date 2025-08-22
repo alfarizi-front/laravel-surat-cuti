@@ -6,7 +6,19 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
+ 
                     <h3 class="card-title">Edit Kepala - {{ $puskesma->nama }}</h3>
+ 
+ 
+                    <h3 class="card-title">Edit Kepala - {{ $puskesma->nama }}</h3>
+ 
+ 
+                    <h3 class="card-title">Edit Kepala - {{ $puskesma->nama }}</h3>
+ 
+                    <h3 class="card-title">Edit Kepala - {{ $puskesma->nama_puskesmas }}</h3>
+ 
+ 
+ 
                 </div>
                 <div class="card-body">
                     <form action="{{ route('admin.puskesmas.update', $puskesma) }}" method="POST" enctype="multipart/form-data">

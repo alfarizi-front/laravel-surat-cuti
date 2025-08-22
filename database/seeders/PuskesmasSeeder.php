@@ -11,7 +11,19 @@ class PuskesmasSeeder extends Seeder
     {
         for ($i = 1; $i <= 27; $i++) {
             Puskesmas::create([
+ 
                 'nama' => 'Puskesmas '.$i,
+ 
+ 
+                'nama' => 'Puskesmas '.$i,
+ 
+ 
+                'nama' => 'Puskesmas '.$i,
+ 
+                'nama_puskesmas' => 'Puskesmas '.$i,
+ 
+ 
+ 
             ]);
         }
     }
