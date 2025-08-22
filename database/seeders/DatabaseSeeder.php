@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * DatabaseSeeder
- * 
+ *
  * Main seeder that orchestrates all database seeding operations.
  * Runs seeders in the correct order to maintain referential integrity.
  */
@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             JenisCutiSeeder::class,
             AlurCutiSeeder::class,
+            PuskesmasSeeder::class,
         ]);
 
         // User data
