@@ -82,6 +82,10 @@
                             <i class="fas fa-stamp mr-2"></i>
                             {{ __('Cap & Tanda Tangan') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.puskesmas.index')" :active="request()->routeIs('admin.puskesmas.*')" class="nav-item">
+                            <i class="fas fa-clinic-medical mr-2"></i>
+                            {{ __('Kepala Puskesmas') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -182,6 +186,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.cap-stempel.index')" :active="request()->routeIs('admin.cap-stempel.*')">
                     {{ __('Cap & Tanda Tangan') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.puskesmas.index')" :active="request()->routeIs('admin.puskesmas.*')">
+                    {{ __('Kepala Puskesmas') }}
                 </x-responsive-nav-link>
             @endif
         </div>
