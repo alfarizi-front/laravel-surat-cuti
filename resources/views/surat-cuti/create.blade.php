@@ -176,19 +176,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @if(auth()->user()->jenis_pegawai === 'ASN')
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                                <div>
-                                    <label for="golongan_ruang" class="block text-sm font-medium text-gray-700">Golongan/Ruang</label>
-                                    <input type="text" id="golongan_ruang" name="golongan_ruang" value="{{ old('golongan_ruang', auth()->user()->golongan) }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="III/a">
-                                </div>
-                                <div>
-                                    <label for="masa_jabatan" class="block text-sm font-medium text-gray-700">Masa Kerja</label>
-                                    <input type="text" id="masa_jabatan" name="masa_jabatan" value="{{ old('masa_jabatan', auth()->user()->masa_kerja) }}" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="5 Tahun 0 Bulan">
-                                </div>
-                            </div>
-                            @endif
-                        </div>
+                           
 
                         <!-- Detail Cuti -->
                         <div class="bg-blue-50/50 p-6 rounded-lg shadow-sm border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
@@ -225,6 +213,40 @@
                                     @error('jenis_cuti_id')
                                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                     @enderror
+                                </div>
+                                <div>
+                                    <label for="puskesmas_id" class="block text-sm font-medium text-gray-700 mb-1">Puskesmas</label>
+                                    <select id="puskesmas_id" name="puskesmas_id" 
+        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors" 
+        required>
+    <option value="">Pilih Puskesmas</option>
+    @foreach($puskesmasList as $puskesmas)
+        <option value="{{ $puskesmas->id }}" {{ old('puskesmas_id') == $puskesmas->id ? 'selected' : '' }}>
+            {{ $puskesmas->nama_puskesmas }}
+        </option>
+    @endforeach
+</select>
+
+                                    <!-- Info Kepala Puskesmas -->
+                                    <div id="kepalaPuskesmasInfo" class="mt-4 p-4 bg-blue-50 border-2 border-blue-300 rounded-lg">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 mr-3">
+                                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h4 class="text-sm font-semibold text-blue-800">Kepala Puskesmas</h4>
+                                                <p id="kepalaNama" class="text-base font-medium text-blue-900">Silakan pilih puskesmas terlebih dahulu</p>
+                                                <p id="kepalaNIP" class="text-sm text-blue-700">NIP: Akan dimuat setelah memilih puskesmas</p>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2 text-xs text-blue-600">
+                                            Surat cuti akan didisposisikan ke kepala puskesmas ini
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -298,13 +320,16 @@
                             </div>
                         </div>
 
+                        </div>
+                        </div>
+                        
                         @if(auth()->user()->jenis_pegawai === 'ASN')
                         <!-- Informasi Tambahan ASN -->
                         <div class="bg-purple-50/50 p-6 rounded-lg shadow-sm border border-gray-200 hover:bg-purple-50 transition-colors duration-200">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Tambahan ASN</h3>
 
                             <!-- Lampiran -->
-                                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label for="kontak_darurat" class="block text-sm font-medium text-gray-700 mb-1">Kontak Darurat</label>
                                     <input type="tel" id="kontak_darurat" name="kontak_darurat" 
@@ -581,5 +606,96 @@
         });
     </script>
     @endpush
+
+    @push('scripts')
+<script>
+// Script untuk menampilkan info kepala puskesmas
+document.addEventListener('DOMContentLoaded', function() {
+    // Pastikan element selalu terlihat
+    const kepalaInfo = document.getElementById('kepalaPuskesmasInfo');
+    if (kepalaInfo) {
+        kepalaInfo.style.display = 'block';
+    }
+    
+    // Tambahkan event listener untuk select
+    const puskesmasSelect = document.getElementById('puskesmas_id');
+    if (puskesmasSelect) {
+        // Update saat halaman dimuat (jika ada pilihan default)
+        updateKepalaInfo();
+        
+        // Update saat pilihan berubah
+        puskesmasSelect.addEventListener('change', updateKepalaInfo);
+    }
+    
+    // Fungsi untuk update info kepala puskesmas
+    function updateKepalaInfo() {
+        const puskesmasSelect = document.getElementById('puskesmas_id');
+        const puskesmasId = puskesmasSelect ? puskesmasSelect.value : '';
+        
+        const kepalaNama = document.getElementById('kepalaNama');
+        const kepalaNIP = document.getElementById('kepalaNIP');
+        
+        if (!puskesmasId) {
+            // Tidak ada pilihan
+            if (kepalaNama) {
+                kepalaNama.textContent = 'Silakan pilih puskesmas terlebih dahulu';
+            }
+            if (kepalaNIP) {
+                kepalaNIP.textContent = 'NIP: Akan dimuat setelah memilih puskesmas';
+            }
+            return;
+        }
+        
+        // Ada pilihan - tampilkan loading
+        if (kepalaNama) {
+            kepalaNama.textContent = 'Memuat data kepala puskesmas...';
+        }
+        if (kepalaNIP) {
+            kepalaNIP.textContent = 'NIP: Memuat...';
+        }
+        
+        // Panggil API untuk mendapatkan informasi kepala puskesmas
+        fetch(`/api/puskesmas/${puskesmasId}/kepala`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    if (kepalaNama) {
+                        kepalaNama.textContent = 'Error: ' + data.error;
+                    }
+                    if (kepalaNIP) {
+                        kepalaNIP.textContent = 'NIP: -';
+                    }
+                } else {
+                    // Tampilkan data kepala puskesmas
+                    if (kepalaNama) {
+                        kepalaNama.textContent = data.nama || 'Nama tidak tersedia';
+                    }
+                    if (kepalaNIP) {
+                        if (data.nip && data.nip !== 'Belum ditentukan') {
+                            kepalaNIP.textContent = 'NIP: ' + data.nip;
+                        } else {
+                            kepalaNIP.textContent = 'NIP: -';
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (kepalaNama) {
+                    kepalaNama.textContent = 'Gagal memuat data. Silakan coba lagi.';
+                }
+                if (kepalaNIP) {
+                    kepalaNIP.textContent = 'NIP: -';
+                }
+            });
+    }
+});
+</script>
+@endpush
 
 </x-app-layout>

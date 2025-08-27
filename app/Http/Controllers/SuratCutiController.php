@@ -23,25 +23,91 @@ class SuratCutiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
+        $sortColumn = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
 
-        if ($user->role === 'admin') {
-            $suratCuti = SuratCuti::with(['pengaju', 'jenisCuti'])->latest()->paginate(10);
-        } elseif ($user->role === 'karyawan') {
-            $suratCuti = SuratCuti::where('pengaju_id', $user->id)
-                ->with(['pengaju', 'jenisCuti'])
-                ->latest()
-                ->paginate(10);
-        } else {
-            // For disposisi roles, show surat that need their action
-            $suratCuti = SuratCuti::whereHas('disposisiCuti', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })->with(['pengaju', 'jenisCuti'])->latest()->paginate(10);
+        // Validasi parameter sorting
+        $validColumns = ['id', 'pengaju', 'jenis_cuti', 'tanggal_awal', 'status', 'tanggal_ajuan', 'created_at'];
+        if (!in_array($sortColumn, $validColumns)) {
+            $sortColumn = 'created_at';
+        }
+        
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'desc';
         }
 
-        return view('surat-cuti.index', compact('suratCuti'));
+        $query = SuratCuti::with(['pengaju', 'jenisCuti']);
+
+        // Tambahkan kondisi berdasarkan role pengguna
+        if ($user->role === 'admin') {
+            // Admin bisa melihat semua surat cuti
+        } elseif ($user->role === 'karyawan') {
+            // Karyawan hanya bisa melihat surat cuti mereka sendiri
+            $query->where('pengaju_id', $user->id);
+        } else {
+            // Untuk role disposisi, tampilkan surat yang perlu ditindaklanjuti
+            $query->whereHas('disposisiCuti', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        }
+
+        // Terapkan filtering
+        if ($request->has('search') && $request->get('search')) {
+            $searchTerm = $request->get('search');
+            $query->where(function($q) use ($searchTerm) {
+                $q->whereHas('pengaju', function ($q) use ($searchTerm) {
+                    $q->where('nama', 'like', '%' . $searchTerm . '%');
+                })->orWhereHas('jenisCuti', function ($q) use ($searchTerm) {
+                    $q->where('nama', 'like', '%' . $searchTerm . '%');
+                })->orWhere('status', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        if ($request->has('status') && $request->get('status')) {
+            $query->where('status', $request->get('status'));
+        }
+
+        if ($request->has('start_date') && $request->get('start_date')) {
+            $query->whereDate('tanggal_awal', '>=', $request->get('start_date'));
+        }
+
+        if ($request->has('end_date') && $request->get('end_date')) {
+            $query->whereDate('tanggal_awal', '<=', $request->get('end_date'));
+        }
+
+        // Terapkan sorting
+        switch ($sortColumn) {
+            case 'pengaju':
+                $query->join('users as pengaju_sort', 'surat_cuti.pengaju_id', '=', 'pengaju_sort.id')
+                      ->orderBy('pengaju_sort.nama', $sortDirection);
+                break;
+            case 'jenis_cuti':
+                $query->join('jenis_cuti as jenis_sort', 'surat_cuti.jenis_cuti_id', '=', 'jenis_sort.id')
+                      ->orderBy('jenis_sort.nama', $sortDirection);
+                break;
+            case 'tanggal_awal':
+                $query->orderBy('surat_cuti.tanggal_awal', $sortDirection);
+                break;
+            case 'status':
+                $query->orderBy('surat_cuti.status', $sortDirection);
+                break;
+            case 'tanggal_ajuan':
+                $query->orderBy('surat_cuti.tanggal_ajuan', $sortDirection);
+                break;
+            case 'id':
+                $query->orderBy('surat_cuti.id', $sortDirection);
+                break;
+            default:
+                $query->orderBy('surat_cuti.created_at', $sortDirection);
+                break;
+        }
+
+        $suratCuti = $query->paginate(10)->appends(request()->except('page'));
+
+        return view('surat-cuti.index', compact('suratCuti', 'sortColumn', 'sortDirection'));
     }
 
     /**
@@ -57,6 +123,11 @@ class SuratCutiController extends Controller
         } else {
             $jenisCuti = JenisCuti::whereIn('berlaku_untuk', ['ASN', 'Keduanya'])->get();
         }
+
+        // Get puskesmas list with kepala information
+        $puskesmasList = \App\Models\Puskesmas::orderBy('nama_puskesmas')
+            ->select(['id', 'nama_puskesmas', 'kepala', 'nip_kepala'])
+            ->get();
 
         // Get informasi cuti tahunan user (sistem lama untuk kompatibilitas)
         $cutiTahunan = $user->getCutiTahunan();
@@ -91,6 +162,7 @@ class SuratCutiController extends Controller
             'alasan' => 'required|string|max:1000',
             'golongan' => 'nullable|string|max:50',
             'masa_kerja' => 'nullable|string|max:50',
+            'puskesmas_id' => 'required|exists:puskesmas,id',
         ];
 
         if ($user->jenis_pegawai === 'ASN') {
@@ -150,6 +222,7 @@ class SuratCutiController extends Controller
         // Create surat cuti
         $validatedData['pengaju_id'] = $user->id;
         $validatedData['status'] = 'draft';
+        $validatedData['puskesmas_id'] = $request->input('puskesmas_id');
 
         $suratCuti = SuratCuti::create($validatedData);
 
@@ -251,6 +324,16 @@ class SuratCutiController extends Controller
     private function createDisposisiAlur(SuratCuti $suratCuti)
     {
         $unitKerja = $suratCuti->pengaju->unit_kerja;
+        $puskesmas = $suratCuti->puskesmas;
+        
+        // Cek apakah puskesmas menggunakan workflow khusus
+        if ($puskesmas && $puskesmas->gunakan_workflow_khusus) {
+            // Buat disposisi khusus untuk puskesmas
+            $this->createDisposisiKhususPuskesmas($suratCuti, $puskesmas);
+            return;
+        }
+        
+        // Gunakan workflow default
         $alurCuti = AlurCuti::getAlurByUnitKerja($unitKerja);
 
         // If no workflow found for specific unit, try fallback patterns
@@ -293,6 +376,68 @@ class SuratCutiController extends Controller
                         'user_id' => $user->id,
                         'jabatan' => $alur->jabatan,
                         'tipe_disposisi' => $alur->tipe_disposisi, // Include tipe_disposisi from workflow
+                        'status' => 'pending',
+                    ]);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Create disposisi khusus untuk puskesmas (mengikuti alur 5 tahap yang benar)
+     */
+    private function createDisposisiKhususPuskesmas(SuratCuti $suratCuti, \App\Models\Puskesmas $puskesmas)
+    {
+        // Dapatkan alur cuti untuk unit kerja puskesmas
+        $alurCuti = AlurCuti::where('unit_kerja', 'like', '%Puskesmas%')
+                           ->orderBy('urutan')
+                           ->get();
+        
+        // Jika tidak ada alur khusus, gunakan fallback
+        if ($alurCuti->isEmpty()) {
+            $alurCuti = AlurCuti::where('unit_kerja', 'Puskesmas')
+                               ->orderBy('urutan')
+                               ->get();
+        }
+        
+        foreach ($alurCuti as $alur) {
+            $user = null;
+            
+            // Untuk Kepala Puskesmas, gunakan kepala puskesmas yang dipilih
+            if ($alur->jabatan === 'Kepala Puskesmas') {
+                $user = $puskesmas->kepalaPuskesmas;
+            } 
+            // Untuk Kepala Tata Usaha, gunakan kepala puskesmas juga (karena puskesmas)
+            elseif ($alur->jabatan === 'Kepala Tata Usaha') {
+                $user = $puskesmas->kepalaPuskesmas;
+            }
+            // Untuk jabatan lain, cari user dengan jabatan yang sesuai
+            else {
+                // Cari user dengan jabatan yang sesuai di unit kerja yang relevan
+                if (in_array($alur->jabatan, ['Kasubag Umpeg', 'Sekretaris Dinas', 'KADIN'])) {
+                    $user = User::where('jabatan', $alur->jabatan)->first();
+                } else {
+                    $user = User::where('jabatan', $alur->jabatan)
+                               ->where('unit_kerja', $alur->unit_kerja)
+                               ->first();
+                }
+            }
+            
+            // Buat disposisi jika user ditemukan
+            if ($user) {
+                // Cek apakah disposisi sudah ada untuk mencegah duplikasi
+                $existingDisposisi = DisposisiCuti::where('surat_cuti_id', $suratCuti->id)
+                    ->where('user_id', $user->id)
+                    ->where('jabatan', $alur->jabatan)
+                    ->first();
+                
+                // Hanya buat disposisi jika belum ada
+                if (! $existingDisposisi) {
+                    DisposisiCuti::create([
+                        'surat_cuti_id' => $suratCuti->id,
+                        'user_id' => $user->id,
+                        'jabatan' => $alur->jabatan,
+                        'tipe_disposisi' => $alur->tipe_disposisi,
                         'status' => 'pending',
                     ]);
                 }
@@ -673,7 +818,7 @@ class SuratCutiController extends Controller
             }
 
             // Load relationships yang diperlukan
-            $suratCuti->load(['pengaju', 'jenisCuti', 'disposisiCuti.user']);
+            $suratCuti->load(['pengaju', 'jenisCuti', 'disposisiCuti.user', 'puskesmas']);
 
             // Get disposisi data dengan urutan yang benar (berdasarkan workflow)
             $disposisiList = $suratCuti->disposisiCuti()
@@ -988,25 +1133,112 @@ class SuratCutiController extends Controller
     /**
      * Admin Dashboard untuk Bulk Operations
      */
-    public function adminDashboard()
+    public function adminDashboard(Request $request)
     {
         // Hanya admin dan kadin yang bisa akses
         if (! in_array(auth()->user()->role, ['admin', 'kadin'])) {
             abort(403, 'Unauthorized');
         }
 
-        $pendingSuratCuti = SuratCuti::whereIn('status', ['draft', 'proses'])
-            ->with(['pengaju', 'jenisCuti'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Get sorting parameters
+        $sortPendingBy = $request->get('sort_pending_by', 'created_at');
+        $sortPendingDirection = $request->get('sort_pending_direction', 'desc');
+        $sortApprovedBy = $request->get('sort_approved_by', 'updated_at');
+        $sortApprovedDirection = $request->get('sort_approved_direction', 'desc');
 
-        $approvedSuratCuti = SuratCuti::where('status', 'disetujui')
-            ->with(['pengaju', 'jenisCuti'])
-            ->orderBy('updated_at', 'desc')
-            ->limit(10)
-            ->get();
+        // Validate sorting parameters
+        $validSortColumns = ['id', 'created_at', 'updated_at', 'nama', 'unit_kerja', 'jenis_cuti', 'tanggal_awal', 'jumlah_hari'];
+        $validDirections = ['asc', 'desc'];
 
-        return view('admin.surat-cuti.dashboard', compact('pendingSuratCuti', 'approvedSuratCuti'));
+        if (!in_array($sortPendingBy, $validSortColumns)) {
+            $sortPendingBy = 'created_at';
+        }
+
+        if (!in_array($sortPendingDirection, $validDirections)) {
+            $sortPendingDirection = 'desc';
+        }
+
+        if (!in_array($sortApprovedBy, $validSortColumns)) {
+            $sortApprovedBy = 'updated_at';
+        }
+
+        if (!in_array($sortApprovedDirection, $validDirections)) {
+            $sortApprovedDirection = 'desc';
+        }
+
+        // Build query for pending surat cuti with sorting
+        $pendingQuery = SuratCuti::whereIn('status', ['draft', 'proses'])
+            ->with(['pengaju', 'jenisCuti']);
+
+        // Apply sorting for pending surat
+        if ($sortPendingBy === 'nama') {
+            $pendingQuery->join('users', 'surat_cuti.pengaju_id', '=', 'users.id')
+                ->orderBy('users.nama', $sortPendingDirection)
+                ->select('surat_cuti.*');
+        } elseif ($sortPendingBy === 'unit_kerja') {
+            $pendingQuery->join('users', 'surat_cuti.pengaju_id', '=', 'users.id')
+                ->orderBy('users.unit_kerja', $sortPendingDirection)
+                ->select('surat_cuti.*');
+        } elseif ($sortPendingBy === 'jenis_cuti') {
+            $pendingQuery->join('jenis_cuti', 'surat_cuti.jenis_cuti_id', '=', 'jenis_cuti.id')
+                ->orderBy('jenis_cuti.nama', $sortPendingDirection)
+                ->select('surat_cuti.*');
+        } elseif ($sortPendingBy === 'tanggal_awal') {
+            $pendingQuery->orderBy('surat_cuti.tanggal_awal', $sortPendingDirection);
+        } elseif ($sortPendingBy === 'jumlah_hari') {
+            // For jumlah_hari, we need to order by the difference between dates
+            if ($sortPendingDirection === 'asc') {
+                $pendingQuery->orderByRaw('DATEDIFF(tanggal_akhir, tanggal_awal) ASC');
+            } else {
+                $pendingQuery->orderByRaw('DATEDIFF(tanggal_akhir, tanggal_awal) DESC');
+            }
+        } else {
+            $pendingQuery->orderBy("surat_cuti.{$sortPendingBy}", $sortPendingDirection);
+        }
+
+        $pendingSuratCuti = $pendingQuery->get();
+
+        // Build query for approved surat cuti with sorting
+        $approvedQuery = SuratCuti::where('status', 'disetujui')
+            ->with(['pengaju', 'jenisCuti']);
+
+        // Apply sorting for approved surat
+        if ($sortApprovedBy === 'nama') {
+            $approvedQuery->join('users', 'surat_cuti.pengaju_id', '=', 'users.id')
+                ->orderBy('users.nama', $sortApprovedDirection)
+                ->select('surat_cuti.*');
+        } elseif ($sortApprovedBy === 'unit_kerja') {
+            $approvedQuery->join('users', 'surat_cuti.pengaju_id', '=', 'users.id')
+                ->orderBy('users.unit_kerja', $sortApprovedDirection)
+                ->select('surat_cuti.*');
+        } elseif ($sortApprovedBy === 'jenis_cuti') {
+            $approvedQuery->join('jenis_cuti', 'surat_cuti.jenis_cuti_id', '=', 'jenis_cuti.id')
+                ->orderBy('jenis_cuti.nama', $sortApprovedDirection)
+                ->select('surat_cuti.*');
+        } elseif ($sortApprovedBy === 'tanggal_awal') {
+            $approvedQuery->orderBy('surat_cuti.tanggal_awal', $sortApprovedDirection);
+        } elseif ($sortApprovedBy === 'jumlah_hari') {
+            // For jumlah_hari, we need to order by the difference between dates
+            if ($sortApprovedDirection === 'asc') {
+                $approvedQuery->orderByRaw('DATEDIFF(tanggal_akhir, tanggal_awal) ASC');
+            } else {
+                $approvedQuery->orderByRaw('DATEDIFF(tanggal_akhir, tanggal_awal) DESC');
+            }
+        } else {
+            $approvedQuery->orderBy("surat_cuti.{$sortApprovedBy}", $sortApprovedDirection);
+        }
+
+        $approvedSuratCuti = $approvedQuery->limit(10)->get();
+
+        // Pass sorting parameters to view
+        $sortingParams = [
+            'sort_pending_by' => $sortPendingBy,
+            'sort_pending_direction' => $sortPendingDirection,
+            'sort_approved_by' => $sortApprovedBy,
+            'sort_approved_direction' => $sortApprovedDirection,
+        ];
+
+        return view('admin.surat-cuti.dashboard', compact('pendingSuratCuti', 'approvedSuratCuti', 'sortingParams'));
     }
 
     /**
@@ -1079,12 +1311,20 @@ class SuratCutiController extends Controller
     }
 
     /**
-     * Create Auto Disposisi untuk Bulk Approval
+     * Create auto disposisi for bulk approval
      */
     private function createAutoDisposisi(SuratCuti $suratCuti)
     {
         $unitKerja = $suratCuti->pengaju->unit_kerja;
+        $puskesmas = $suratCuti->puskesmas;
         $disposisiList = [];
+
+        // Cek apakah puskesmas menggunakan workflow khusus
+        if ($puskesmas && $puskesmas->gunakan_workflow_khusus && $puskesmas->kepalaPuskesmas) {
+            // Buat disposisi khusus untuk puskesmas
+            $this->createAutoDisposisiKhususPuskesmas($suratCuti, $puskesmas);
+            return;
+        }
 
         // Tentukan disposisi berdasarkan unit kerja
         if (stripos($unitKerja, 'puskesmas') !== false) {
@@ -1105,17 +1345,77 @@ class SuratCutiController extends Controller
             ];
         }
 
-        // Buat disposisi otomatis
+        // Buat disposisi otomatis dengan pengecekan duplikasi
         foreach ($disposisiList as $disposisi) {
-            DisposisiCuti::create([
-                'surat_cuti_id' => $suratCuti->id,
-                'user_id' => auth()->id(), // Admin yang approve
-                'jabatan' => $disposisi['jabatan'],
-                'tipe_disposisi' => $disposisi['tipe_disposisi'],
-                'status' => 'sudah',
-                'tanggal' => now(),
-                'catatan' => 'Auto-approved by admin for debugging',
-            ]);
+            // Cek apakah disposisi sudah ada
+            $existingDisposisi = DisposisiCuti::where('surat_cuti_id', $suratCuti->id)
+                ->where('jabatan', $disposisi['jabatan'])
+                ->first();
+                
+            // Hanya buat jika belum ada
+            if (! $existingDisposisi) {
+                DisposisiCuti::create([
+                    'surat_cuti_id' => $suratCuti->id,
+                    'user_id' => auth()->id(), // Admin yang approve
+                    'jabatan' => $disposisi['jabatan'],
+                    'tipe_disposisi' => $disposisi['tipe_disposisi'],
+                    'status' => 'sudah',
+                    'tanggal' => now(),
+                    'catatan' => 'Auto-approved by admin for debugging',
+                ]);
+            }
+        }
+    }
+    
+    /**
+     * Create auto disposisi khusus untuk puskesmas
+     */
+    private function createAutoDisposisiKhususPuskesmas(SuratCuti $suratCuti, \App\Models\Puskesmas $puskesmas)
+    {
+        // Buat disposisi untuk kepala puskesmas dengan pengecekan duplikasi
+        $kepalaPuskesmas = $puskesmas->kepalaPuskesmas;
+        if ($kepalaPuskesmas) {
+            // Cek apakah disposisi sudah ada
+            $existingDisposisi = DisposisiCuti::where('surat_cuti_id', $suratCuti->id)
+                ->where('user_id', $kepalaPuskesmas->id)
+                ->where('jabatan', 'Kepala Puskesmas')
+                ->first();
+                
+            // Hanya buat jika belum ada
+            if (! $existingDisposisi) {
+                DisposisiCuti::create([
+                    'surat_cuti_id' => $suratCuti->id,
+                    'user_id' => $kepalaPuskesmas->id,
+                    'jabatan' => 'Kepala Puskesmas',
+                    'tipe_disposisi' => 'paraf',
+                    'status' => 'sudah',
+                    'tanggal' => now(),
+                    'catatan' => 'Auto-approved by admin for debugging',
+                ]);
+            }
+        }
+        
+        // Tambahkan disposisi KADIN dengan pengecekan duplikasi
+        $kadin = User::where('role', 'kadin')->first();
+        if ($kadin) {
+            // Cek apakah disposisi sudah ada
+            $existingDisposisi = DisposisiCuti::where('surat_cuti_id', $suratCuti->id)
+                ->where('user_id', $kadin->id)
+                ->where('jabatan', 'KADIN')
+                ->first();
+                
+            // Hanya buat jika belum ada
+            if (! $existingDisposisi) {
+                DisposisiCuti::create([
+                    'surat_cuti_id' => $suratCuti->id,
+                    'user_id' => $kadin->id,
+                    'jabatan' => 'KADIN',
+                    'tipe_disposisi' => 'ttd',
+                    'status' => 'sudah',
+                    'tanggal' => now(),
+                    'catatan' => 'Auto-approved by admin for debugging',
+                ]);
+            }
         }
     }
 }
