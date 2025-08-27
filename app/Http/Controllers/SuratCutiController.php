@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AlurCuti;
 use App\Models\DisposisiCuti;
 use App\Models\JenisCuti;
+use App\Models\Puskesmas;
 use App\Models\Signature;
 use App\Models\SisaCuti;
 use App\Models\SuratCuti;
@@ -70,8 +71,9 @@ class SuratCutiController extends Controller
             $cutiTahunan->sisa_cuti = $sisaCutiSekarang->sisa_akhir;
             $cutiTahunan->cuti_digunakan = $sisaCutiSekarang->cuti_diambil;
         }
+        $puskesmasList = Puskesmas::orderBy('nama_puskesmas')->get();
 
-        return view('surat-cuti.create', compact('jenisCuti', 'cutiTahunan', 'sisaCutiData'));
+        return view('surat-cuti.create', compact('jenisCuti', 'cutiTahunan', 'sisaCutiData', 'puskesmasList'));
     }
 
     /**
@@ -101,18 +103,11 @@ class SuratCutiController extends Controller
 
         $validatedData = $request->validate($rules);
 
- 
- 
- 
- 
         if ($user->jenis_pegawai === 'ASN') {
             $validatedData['golongan_ruang'] = $request->input('golongan_ruang');
             $validatedData['masa_jabatan'] = $request->input('masa_jabatan');
         }
 
- 
- 
- 
         // Update informasi golongan dan masa kerja pengguna
         $golongan = $request->input('golongan', $user->golongan);
         $masaKerja = $request->input('masa_kerja', $user->masa_kerja);
@@ -129,8 +124,6 @@ class SuratCutiController extends Controller
 
         unset($validatedData['golongan'], $validatedData['masa_kerja']);
 
- 
- 
         // Hitung jumlah hari cuti
         $tanggalAwal = \Carbon\Carbon::parse($request->tanggal_awal);
         $tanggalAkhir = \Carbon\Carbon::parse($request->tanggal_akhir);
@@ -753,10 +746,7 @@ class SuratCutiController extends Controller
                             } catch (\Exception $e) {
                                 $pejabat_cap_base64 = null;
                             }
- 
- 
- 
- 
+
                         }
                     }
 
@@ -787,8 +777,7 @@ class SuratCutiController extends Controller
                             $pejabatStatus = 'disetujui';
                         } elseif ($suratCuti->status === 'ditolak') {
                             $pejabatStatus = 'tidak_disetujui';
- 
- 
+
                         }
                     }
 
