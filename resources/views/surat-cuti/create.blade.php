@@ -193,7 +193,21 @@
                         <!-- Detail Cuti -->
                         <div class="bg-blue-50/50 p-6 rounded-lg shadow-sm border border-gray-200 hover:bg-blue-50 transition-colors duration-200">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Detail Pengajuan Cuti</h3>
-                            
+
+                            <!-- Puskesmas -->
+                            <div class="mb-6">
+                                <label for="puskesmas_id" class="block text-sm font-medium text-gray-700 mb-1">Puskesmas</label>
+                                <select id="puskesmas_id" name="puskesmas_id" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Pilih Puskesmas</option>
+                                    @foreach($puskesmasList as $puskesmas)
+                                        <option value="{{ $puskesmas->id }}" data-kepala="{{ $puskesmas->kepala_puskesmas ?? '' }}">
+                                            {{ $puskesmas->nama_puskesmas }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div id="kepala_puskesmas_display" class="mt-2 text-sm text-gray-600 hidden"></div>
+                            </div>
+
                             <!-- Jenis dan Alasan -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div>
@@ -356,6 +370,26 @@
         document.addEventListener('DOMContentLoaded', function() {
             const formCuti = document.getElementById('formCuti');
             if (!formCuti) return;
+
+            const puskesmasSelect = document.getElementById('puskesmas_id');
+            const kepalaDisplay = document.getElementById('kepala_puskesmas_display');
+            if (puskesmasSelect) {
+                puskesmasSelect.addEventListener('change', function () {
+                    const selected = this.options[this.selectedIndex];
+                    const kepala = selected.getAttribute('data-kepala');
+                    if (kepala) {
+                        kepalaDisplay.textContent = 'Kepala Puskesmas: ' + kepala;
+                        kepalaDisplay.classList.remove('hidden');
+                    } else {
+                        kepalaDisplay.textContent = '';
+                        kepalaDisplay.classList.add('hidden');
+                    }
+                });
+
+                if (puskesmasSelect.value) {
+                    puskesmasSelect.dispatchEvent(new Event('change'));
+                }
+            }
 
             const tanggalAwal = document.getElementById('tanggal_awal');
             const tanggalAkhir = document.getElementById('tanggal_akhir');
